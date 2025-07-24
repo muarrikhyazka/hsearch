@@ -3,3 +3,12 @@ __pycache__/
 .env
 *.pyc
 import_env/
+
+# Claude development artifacts
+.claude/
+
+# Large binary files
+data/*.pdf
+
+# Duplicate/temporary data files
+data/final-dataset-utf8.csv
