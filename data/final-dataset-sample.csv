@@ -1,0 +1,101 @@
+no,hs_code,description,section,chapter,heading,subheading,chapter_desc,heading_desc,subheading_desc,section_name
+1,01012900,"live horses, other than pure-bred breeding animals",I,01,0101,010129,Animals; live,"Horses, asses, mules and hinnies; live","Horses; live, other than pure-bred breeding animals",live animals; animal products
+5,01022100,"live cattle, pure-bred breeding animals",I,01,0102,010221,Animals; live,Bovine animals; live,"Cattle; live, pure-bred breeding animals",live animals; animal products
+9,01023100,"live buffalo, pure-bred breeding animals",I,01,0102,010231,Animals; live,Bovine animals; live,"Buffalo; live, pure-bred breeding animals",live animals; animal products
+10,01023900,"live buffalo, other than pure-bred breeding animals",I,01,0102,010239,Animals; live,Bovine animals; live,"Buffalo; live, other than pure-bred breeding animals",live animals; animal products
+14,01039100,"live swine, other than pure-bred breeding animals, weighing less than 50 kg",I,01,0103,010391,Animals; live,Swine; live,"Swine; live, other than pure-bred breeding animals, weighing less than 50kg",live animals; animal products
+15,01039200,"live swine, other than pure-bred breeding animals, weighing 50 kg or more",I,01,0103,010392,Animals; live,Swine; live,"Swine; live, other than pure-bred breeding animals, weighing 50kg or more",live animals; animal products
+39,01061100,live primates,I,01,0106,010611,Animals; live,"Animals; live, n.e.c. in chapter 01","Mammals; live, primates",live animals; animal products
+42,01061300,live camels and other camelids (camelidae),I,01,0106,010613,Animals; live,"Animals; live, n.e.c. in chapter 01","Mammals; live, camels and other camelids (Camelidae)",live animals; animal products
+43,01061400,live rabbits and hares,I,01,0106,010614,Animals; live,"Animals; live, n.e.c. in chapter 01","Mammals; live, rabbits and hares",live animals; animal products
+44,01061900,"live mammals, other than in subheading 010611 to 010614",I,01,0106,010619,Animals; live,"Animals; live, n.e.c. in chapter 01","Mammals; live, other than primates, whales, dolphins, porpoises (mammals of the order Cetacea); manatees, dugongs (mammals of the order Sirenia); seals, sea lions, walruses (mammals of the suborder Pinnipedia), camels, other camelids, rabbits and hares",live animals; animal products
+46,01063100,live birds of prey,I,01,0106,010631,Animals; live,"Animals; live, n.e.c. in chapter 01","Birds; live, birds of prey",live animals; animal products
+47,01063200,"live psittaciformes (including parrots, parakeets, macaws and cockatoos)",I,01,0106,010632,Animals; live,"Animals; live, n.e.c. in chapter 01","Birds; live, Psittaciformes",live animals; animal products
+48,01063300,"live ostriches, emus (dromaius novaehollandiae)",I,01,0106,010633,Animals; live,"Animals; live, n.e.c. in chapter 01","Birds; live, ostriches; emus (Dromaius novaehollandiae)",live animals; animal products
+49,01063900,"live birds, other than birds of prey, psittaciformes, ostriches, emus (dromaius novaehollandiae)",I,01,0106,010639,Animals; live,"Animals; live, n.e.c. in chapter 01","Birds; live, other than birds of prey, Psittaciformes, ostriches and emus (Dromaius novaehollandiae)",live animals; animal products
+50,01064100,live bees,I,01,0106,010641,Animals; live,"Animals; live, n.e.c. in chapter 01","Insects; live, bees",live animals; animal products
+51,01064900,live insects other than bees,I,01,0106,010649,Animals; live,"Animals; live, n.e.c. in chapter 01","Insects; live, other than bees",live animals; animal products
+59,02031100,"carcasses and half-carcasses meat of swine, fresh or chilled",I,02,0203,020311,Meat and edible meat offal,"Meat of swine; fresh, chilled or frozen","Meat; of swine, carcasses and half-carcasses, fresh or chilled",live animals; animal products
+60,02031200,"hams, shoulders and cuts thereof, with bone in meat of swine, fresh or chilled",I,02,0203,020312,Meat and edible meat offal,"Meat of swine; fresh, chilled or frozen","Meat; of swine, hams, shoulders and cuts thereof, with bone in, fresh or chilled",live animals; animal products
+61,02031900,"meat of swine other than carcasses,half carcasses, hams, shoulders and cuts thereof, with bone in, fresh",I,02,0203,020319,Meat and edible meat offal,"Meat of swine; fresh, chilled or frozen","Meat; of swine, n.e.c. in item no. 0203.1, fresh or chilled",live animals; animal products
+62,02032100,"carcasses and half-carcasses meat of swine, frozen",I,02,0203,020321,Meat and edible meat offal,"Meat of swine; fresh, chilled or frozen","Meat; of swine, carcasses and half-carcasses, frozen",live animals; animal products
+63,02032200,"hams, shoulders and cuts thereof, with bone in meat of swine, frozen",I,02,0203,020322,Meat and edible meat offal,"Meat of swine; fresh, chilled or frozen","Meat; of swine, hams, shoulders and cuts thereof, with bone in, frozen",live animals; animal products
+64,02032900,"meat of swine other than carcasses,half carcasses, hams, shoulders and cuts thereof, with bone in,",I,02,0203,020329,Meat and edible meat offal,"Meat of swine; fresh, chilled or frozen","Meat; of swine, n.e.c. in item no. 0203.2, frozen",live animals; animal products
+66,02042100,"carcasses and half-carcasses meat of sheep, fresh or chilled",I,02,0204,020421,Meat and edible meat offal,"Meat of sheep or goats; fresh, chilled or frozen","Meat; of sheep, carcasses and half-carcasses (excluding carcasses and half-carcasses of lamb), fresh or chilled",live animals; animal products
+67,02042200,"other cuts with bone in meat of sheep, fresh or chilled",I,02,0204,020422,Meat and edible meat offal,"Meat of sheep or goats; fresh, chilled or frozen","Meat; of sheep (including lamb), cuts with bone in (excluding carcasses and half-carcasses), fresh or chilled",live animals; animal products
+68,02042300,"boneless meat of sheep, fresh or chilled",I,02,0204,020423,Meat and edible meat offal,"Meat of sheep or goats; fresh, chilled or frozen","Meat; of sheep (including lamb), boneless cuts, fresh or chilled",live animals; animal products
+70,02044100,"carcasses and half-carcasses meat of sheep, frozen",I,02,0204,020441,Meat and edible meat offal,"Meat of sheep or goats; fresh, chilled or frozen","Meat; of sheep, carcasses and half-carcasses (excluding carcasses and half-carcasses of lamb), frozen",live animals; animal products
+71,02044200,"other cuts with bone in meat of sheep, frozen",I,02,0204,020442,Meat and edible meat offal,"Meat of sheep or goats; fresh, chilled or frozen","Meat; of sheep (including lamb), cuts with bone in (excluding carcasses and half-carcasses), frozen",live animals; animal products
+72,02044300,"boneless meat of sheep, frozen",I,02,0204,020443,Meat and edible meat offal,"Meat of sheep or goats; fresh, chilled or frozen","Meat; of sheep (including lamb), boneless cuts, frozen",live animals; animal products
+76,02062100,"tongues of bovine animals, frozen",I,02,0206,020621,Meat and edible meat offal,"Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies; fresh, chilled or frozen","Offal, edible; of bovine animals, tongues, frozen",live animals; animal products
+77,02062200,"livers of bovine animals, frozen",I,02,0206,020622,Meat and edible meat offal,"Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies; fresh, chilled or frozen","Offal, edible; of bovine animals, livers, frozen",live animals; animal products
+78,02062900,"edible offal of bovine animals other than tongues and livers, frozen",I,02,0206,020629,Meat and edible meat offal,"Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies; fresh, chilled or frozen","Offal, edible; of bovine animals, (other than tongues and livers), frozen",live animals; animal products
+80,02064100,"livers of swine, frozen",I,02,0206,020641,Meat and edible meat offal,"Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies; fresh, chilled or frozen","Offal, edible; of swine, livers, frozen",live animals; animal products
+81,02064900,"edible offal of swine, other than livers, frozen",I,02,0206,020649,Meat and edible meat offal,"Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies; fresh, chilled or frozen","Offal, edible; of swine, (other than livers), frozen",live animals; animal products
+84,02071100,"meat and edible offal of fowls of the species gallus domesticus, not cut in pieces, fresh or chilled",I,02,0207,020711,Meat and edible meat offal,"Meat and edible offal of poultry; of the poultry of heading no. 0105, (i.e. fowls of the species Gallus domesticus), fresh, chilled or frozen","Meat and edible offal; of fowls of the species Gallus domesticus, not cut in pieces, fresh or chilled",live animals; animal products
+85,02071200,"meat and edible offal of fowls of the species gallus domesticus, not cut in pieces, frozen",I,02,0207,020712,Meat and edible meat offal,"Meat and edible offal of poultry; of the poultry of heading no. 0105, (i.e. fowls of the species Gallus domesticus), fresh, chilled or frozen","Meat and edible offal; of fowls of the species Gallus domesticus, not cut in pieces, frozen",live animals; animal products
+86,02071300,"meat and edible offal of fowls of the species gallus domesticus, cuts and offal, fresh or chilled",I,02,0207,020713,Meat and edible meat offal,"Meat and edible offal of poultry; of the poultry of heading no. 0105, (i.e. fowls of the species Gallus domesticus), fresh, chilled or frozen","Meat and edible offal; of fowls of the species Gallus domesticus, cuts and offal, fresh or chilled",live animals; animal products
+92,02072400,"meat and edible offal of turkeys, not cut in pieces, fresh or chilled",I,02,0207,020724,Meat and edible meat offal,"Meat and edible offal of poultry; of the poultry of heading no. 0105, (i.e. fowls of the species Gallus domesticus), fresh, chilled or frozen","Meat and edible offal; of turkeys, not cut in pieces, fresh or chilled",live animals; animal products
+93,02072500,"meat and edible offal of turkeys, not cut in pieces, frozen",I,02,0207,020725,Meat and edible meat offal,"Meat and edible offal of poultry; of the poultry of heading no. 0105, (i.e. fowls of the species Gallus domesticus), fresh, chilled or frozen","Meat and edible offal; of turkeys, not cut in pieces, frozen",live animals; animal products
+94,02072600,"meat and edible offal of turkeys, cuts and offal, fresh or chilled",I,02,0207,020726,Meat and edible meat offal,"Meat and edible offal of poultry; of the poultry of heading no. 0105, (i.e. fowls of the species Gallus domesticus), fresh, chilled or frozen","Meat and edible offal; of turkeys, cuts and offal, fresh or chilled",live animals; animal products
+98,02074100,"meat and edible offal of ducks not cut in pieces, fresh or chilled",I,02,0207,020741,Meat and edible meat offal,"Meat and edible offal of poultry; of the poultry of heading no. 0105, (i.e. fowls of the species Gallus domesticus), fresh, chilled or frozen","Meat and edible offal; of ducks, not cut in pieces, fresh or chilled",live animals; animal products
+99,02074200,"meat and edible offal of ducks not cut in pieces, frozen",I,02,0207,020742,Meat and edible meat offal,"Meat and edible offal of poultry; of the poultry of heading no. 0105, (i.e. fowls of the species Gallus domesticus), fresh, chilled or frozen","Meat and edible offal; of ducks, not cut in pieces, frozen",live animals; animal products
+100,02074300,"fatty livers of ducks, fresh or chilled",I,02,0207,020743,Meat and edible meat offal,"Meat and edible offal of poultry; of the poultry of heading no. 0105, (i.e. fowls of the species Gallus domesticus), fresh, chilled or frozen","Meat and edible offal; of ducks, fatty livers (foie gras), fresh or chilled",live animals; animal products
+101,02074400,"meat and edible offal of ducks, cut in pieces and other than fatty livers, fresh or chilled",I,02,0207,020744,Meat and edible meat offal,"Meat and edible offal of poultry; of the poultry of heading no. 0105, (i.e. fowls of the species Gallus domesticus), fresh, chilled or frozen","Meat and edible offal; of ducks, cuts and offal, excluding fatty livers, fresh or chilled",live animals; animal products
+104,02075100,"meat and edible offal of geese, not cut in pieces, fresh or chilled",I,02,0207,020751,Meat and edible meat offal,"Meat and edible offal of poultry; of the poultry of heading no. 0105, (i.e. fowls of the species Gallus domesticus), fresh, chilled or frozen","Meat and edible offal; of geese, not cut in pieces, fresh or chilled",live animals; animal products
+105,02075200,"meat and edible offal of geese, not cut in pieces, frozen",I,02,0207,020752,Meat and edible meat offal,"Meat and edible offal of poultry; of the poultry of heading no. 0105, (i.e. fowls of the species Gallus domesticus), fresh, chilled or frozen","Meat and edible offal; of geese, not cut in pieces, frozen",live animals; animal products
+106,02075300,"fatty livers of geese, fresh or chilled",I,02,0207,020753,Meat and edible meat offal,"Meat and edible offal of poultry; of the poultry of heading no. 0105, (i.e. fowls of the species Gallus domesticus), fresh, chilled or frozen","Meat and edible offal; of geese, fatty livers (foie gras), fresh or chilled",live animals; animal products
+107,02075400,"meat and edible offal of geese, cut in pieces and other than fatty livers, fresh or chilled",I,02,0207,020754,Meat and edible meat offal,"Meat and edible offal of poultry; of the poultry of heading no. 0105, (i.e. fowls of the species Gallus domesticus), fresh, chilled or frozen","Meat and edible offal; of geese, cuts and offal, excluding fatty livers, fresh or chilled",live animals; animal products
+124,02101100,"hams, shoulders and cuts thereof, with bone in meat of swine, salted, in brine, dried or smoked",I,02,0210,021011,Meat and edible meat offal,"Meat and edible meat offal; salted, in brine, dried or smoked; edible flours and meals of meat or meat offal","Meat; salted, in brine, dried or smoked, of swine, hams, shoulders and cuts thereof, with bone in",live animals; animal products
+125,02101200,"bellies (streaky) and cuts thereof meat of swine, salted, in brine, dried or smoked",I,02,0210,021012,Meat and edible meat offal,"Meat and edible meat offal; salted, in brine, dried or smoked; edible flours and meals of meat or meat offal","Meat; salted, in brine, dried or smoked, of swine, bellies (streaky) and cuts thereof",live animals; animal products
+129,02109100,"meat and edible meat offal of primates including edible flours and meals of meat or meat offal, salted, in",I,02,0210,021091,Meat and edible meat offal,"Meat and edible meat offal; salted, in brine, dried or smoked; edible flours and meals of meat or meat offal","Meat and edible meat offal; salted, in brine, dried or smoked, and edible flours and meals of meat or meat offal, of primates",live animals; animal products
+2,01013010,"live asses, pure-bred breeding animals",,,,,,,,
+3,01013090,"live asses, other than pure-bred breeding animals",,,,,,,,
+4,01019000,live mules and hinnies,,,,,,,,
+6,01022911,live oxen,,,,,,,,
+7,01022919,live male cattle other than oxen,,,,,,,,
+8,01022990,"live cattle, other than pure-bred breeding animals, other than male cattle",,,,,,,,
+11,01029010,"live bovine animals, other than cattle and buffalo, pure-bred breeding animals",,,,,,,,
+12,01029090,"live bovine animals, other than cattle and buffalo, other than pure-bred breeding animals",,,,,,,,
+13,01031000,"live swine, pure-bred breeding animals",,,,,,,,
+16,01041010,"live sheep, pure-bred breeding animals",,,,,,,,
+17,01041090,"live sheep, other than pure-bred breeding animals",,,,,,,,
+18,01042010,"live goats, pure-bred breeding animals",,,,,,,,
+19,01042090,"live goats, other than pure-bred breeding animals",,,,,,,,
+20,01051110,"breeding fowls of the species gallus domesticus, weighing not more than 185 g",,,,,,,,
+21,01051190,"live fowls of the species gallus domesticus, other than breeding, weighing not more than 185 g",,,,,,,,
+22,01051210,"breeding turkeys, weighing not more than 185 g",,,,,,,,
+23,01051290,"live turkeys, other than breeding, weighing not more than 185 g",,,,,,,,
+24,01051310,"breeding ducklings, weighing not more than 185 g",,,,,,,,
+25,01051390,"live ducklings, other than breeding, weighing not more than 185 g",,,,,,,,
+26,01051410,"breeding goslings, weighing not more than 185 g",,,,,,,,
+27,01051490,"live geese, other than breeding, weighing not more than 185 g",,,,,,,,
+28,01051510,"breeding guinea fowls, weighing not more than 185 g",,,,,,,,
+29,01051590,"live guinea fowls, other than breeding, weighing not more than 185 g",,,,,,,,
+30,01059410,"breeding fowls of the species gallus domesticus other than fighting cocks, weighing more than 185 g",,,,,,,,
+31,01059441,"live fighting cocks of the species gallus domesticus, 185 g = weighing = 2 kg",,,,,,,,
+32,01059449,"live fighting cocks of the species gallus domesticus, weighing more than 2 kg",,,,,,,,
+33,01059491,"live fowls of the species gallus domesticus, other than breeding fowls and fighting cocks, 185 g = weighing",,,,,,,,
+34,01059499,"live fowls of the species gallus domesticus, other than breeding fowls and fighting cocks, weighing more",,,,,,,,
+35,01059910,"breeding ducks, weighing more than 185 g",,,,,,,,
+36,01059920,"live ducks other than breeding, weighing more than 185 g",,,,,,,,
+37,01059930,"breeding geese, turkeys, and guinea fowls, weighing more than 185 g",,,,,,,,
+38,01059940,"live geese, turkeys, and guinea fowls, other than breeding, weighing more than 185 g",,,,,,,,
+40,01061210,"live whales, dolphins and porpoises (mammals of the order cetacea), manatees and dugongs (mammals",,,,,,,,
+41,01061220,"live seals, sea lions and walruses (mammals of the suborder pinnipedia)",,,,,,,,
+45,01062000,live reptiles (including snakes and turtles),,,,,,,,
+52,01069000,"live animals, other than in subheading 010611 to 010649",,,,,,,,
+53,02011000,"carcasses and half-carcasses meat of bovine animals, fresh or chilled",,,,,,,,
+54,02012000,"other cuts with bone in meat of bovine animals, fresh or chilled",,,,,,,,
+55,02013000,"boneless meat of bovine animals, fresh or chilled",,,,,,,,
+56,02021000,"carcasses and half-carcasses meat of bovine animals, frozen",,,,,,,,
+57,02022000,"other cuts with bone in meat of bovine animals, frozen",,,,,,,,
+58,02023000,"boneless meat of bovine animals, frozen",,,,,,,,
+65,02041000,"carcasses and half-carcasses of lamb, fresh or chilled",,,,,,,,
+69,02043000,"carcasses and half-carcasses of lamb, frozen",,,,,,,,
+73,02045000,"meat of goats, fresh, chilled or frozen",,,,,,,,
+74,02050000,"meat of horses, asses, mules or hinnies, fresh, chilled or frozen",,,,,,,,
+75,02061000,"edible offal of bovine animals, fresh or chilled",,,,,,,,
+79,02063000,"edible offal of swine, fresh or chilled",,,,,,,,
+82,02068000,"edible offal of sheep, goats, horses, asses, mules or hinnies, fresh or chilled",,,,,,,,
+83,02069000,"edible offal of sheep, goats, horses, asses, mules or hinnies, frozen",,,,,,,,
