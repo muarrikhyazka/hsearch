@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Data import script for HS codes - Fixed for correct CSV structure
-CSV columns: section,hscode,description,parent,level
+Data import script for HS codes - Updated for final-dataset.csv structure
+CSV columns: no,hs_code,description,section,chapter,heading,subheading,chapter_desc,heading_desc,subheading_desc,section_name
 """
 
 import pandas as pd
@@ -14,7 +14,7 @@ import sys
 
 # Configuration
 DATABASE_URL = os.getenv('DATABASE_URL', "postgresql://hsearch_user:hsearch_secure_2024@localhost:5432/hsearch_db")
-DATA_URL = "https://raw.githubusercontent.com/datasets/harmonized-system/main/data/harmonized-system.csv"
+DATA_FILE = "data/final-dataset.csv"
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -105,17 +105,23 @@ def categorize_hs_code(description):
         return 'others'
 
 def validate_and_clean_data(row):
-    """Validate and clean row data"""
+    """Validate and clean row data for new structure"""
     try:
-        # Extract data with proper column names
-        section = str(row['section']).strip() if pd.notna(row['section']) else ''
-        hscode = str(row['hscode']).strip() if pd.notna(row['hscode']) else ''
+        # Extract data from new CSV structure
+        no = int(row['no']) if pd.notna(row['no']) else None
+        hs_code = str(row['hs_code']).strip() if pd.notna(row['hs_code']) else ''
         description = str(row['description']).strip() if pd.notna(row['description']) else ''
-        parent = str(row['parent']).strip() if pd.notna(row['parent']) and str(row['parent']).strip() != 'TOTAL' else None
-        level = int(row['level']) if pd.notna(row['level']) else 1
+        section = str(row['section']).strip() if pd.notna(row['section']) else ''
+        chapter = str(row['chapter']).strip() if pd.notna(row['chapter']) else ''
+        heading = str(row['heading']).strip() if pd.notna(row['heading']) else ''
+        subheading = str(row['subheading']).strip() if pd.notna(row['subheading']) else ''
+        chapter_desc = str(row['chapter_desc']).strip() if pd.notna(row['chapter_desc']) else ''
+        heading_desc = str(row['heading_desc']).strip() if pd.notna(row['heading_desc']) else ''
+        subheading_desc = str(row['subheading_desc']).strip() if pd.notna(row['subheading_desc']) else ''
+        section_name = str(row['section_name']).strip() if pd.notna(row['section_name']) else ''
         
         # Validate required fields
-        if not hscode or hscode == 'nan':
+        if not hs_code or hs_code == 'nan':
             return None, "Missing HS code"
         
         if not description or description == 'nan':
@@ -127,11 +133,23 @@ def validate_and_clean_data(row):
         # Auto-categorize
         category = categorize_hs_code(description)
         
+        # Determine level based on hierarchy presence
+        level = 6  # Default subheading level
+        if not subheading or subheading == '':
+            level = 4 if heading and heading != '' else 2 if chapter and chapter != '' else 1
+        
         return {
-            'section': section,
-            'hscode': hscode,
+            'no': no,
+            'hs_code': hs_code,
             'description_en': description,
-            'parent_code': parent,
+            'section': section,
+            'chapter': chapter,
+            'heading': heading,
+            'subheading': subheading,
+            'chapter_desc': chapter_desc,
+            'heading_desc': heading_desc,
+            'subheading_desc': subheading_desc,
+            'section_name': section_name,
             'level': level,
             'category': category
         }, None
@@ -141,22 +159,22 @@ def validate_and_clean_data(row):
 
 def main():
     logger.info("🚀 Starting HS Code data import...")
-    logger.info(f"📡 Source: {DATA_URL}")
+    logger.info(f"📁 Source: {DATA_FILE}")
     
     # Test database connection first
     if not test_database_connection():
         logger.error("❌ Cannot proceed without database connection")
         sys.exit(1)
     
-    # Download and load data
-    logger.info("📥 Downloading HS code data...")
+    # Load local data file
+    logger.info("📥 Loading HS code data...")
     try:
-        df = pd.read_csv(DATA_URL)
-        logger.info(f"✅ Downloaded {len(df)} records")
+        df = pd.read_csv(DATA_FILE)
+        logger.info(f"✅ Loaded {len(df)} records")
         logger.info(f"📊 Columns: {list(df.columns)}")
         
-        # Verify expected columns
-        expected_columns = ['section', 'hscode', 'description', 'parent', 'level']
+        # Verify expected columns for new structure
+        expected_columns = ['no', 'hs_code', 'description', 'section', 'chapter', 'heading', 'subheading']
         missing_columns = [col for col in expected_columns if col not in df.columns]
         if missing_columns:
             logger.error(f"❌ Missing expected columns: {missing_columns}")
@@ -166,10 +184,10 @@ def main():
         # Show data sample
         logger.info("📋 Data sample:")
         for i, (idx, row) in enumerate(df.head(3).iterrows()):
-            logger.info(f"  Row {i+1}: {row['hscode']} - {row['description'][:60]}...")
+            logger.info(f"  Row {i+1}: {row['hs_code']} - {row['description'][:60]}...")
             
     except Exception as e:
-        logger.error(f"❌ Failed to download data: {e}")
+        logger.error(f"❌ Failed to load data: {e}")
         sys.exit(1)
     
     # Connect to database
@@ -222,19 +240,27 @@ def main():
                     batch_errors += 1
                     continue
                 
-                hscode = data['hscode']
+                hs_code = data['hs_code']
                 
-                # Insert into database
+                # Insert into database with new structure
                 sql = """
                 INSERT INTO hs_codes 
-                (section, hscode, description_en, description_id, parent_code, level, category, 
+                (no, hs_code, description_en, description_id, section, chapter, heading, subheading,
+                 chapter_desc, heading_desc, subheading_desc, section_name, level, category, 
                  search_vector_en, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, to_tsvector('english', %s), NOW(), NOW())
-                ON CONFLICT (hscode) DO UPDATE SET
-                    section = EXCLUDED.section,
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, to_tsvector('english', %s), NOW(), NOW())
+                ON CONFLICT (hs_code) DO UPDATE SET
+                    no = EXCLUDED.no,
                     description_en = EXCLUDED.description_en,
                     description_id = EXCLUDED.description_id,
-                    parent_code = EXCLUDED.parent_code,
+                    section = EXCLUDED.section,
+                    chapter = EXCLUDED.chapter,
+                    heading = EXCLUDED.heading,
+                    subheading = EXCLUDED.subheading,
+                    chapter_desc = EXCLUDED.chapter_desc,
+                    heading_desc = EXCLUDED.heading_desc,
+                    subheading_desc = EXCLUDED.subheading_desc,
+                    section_name = EXCLUDED.section_name,
                     level = EXCLUDED.level,
                     category = EXCLUDED.category,
                     search_vector_en = to_tsvector('english', EXCLUDED.description_en),
@@ -242,11 +268,18 @@ def main():
                 """
                 
                 cursor.execute(sql, (
-                    data['section'],
-                    data['hscode'],
+                    data['no'],
+                    data['hs_code'],
                     data['description_en'],
                     data['description_en'],  # Placeholder for Indonesian translation
-                    data['parent_code'],
+                    data['section'],
+                    data['chapter'],
+                    data['heading'],
+                    data['subheading'],
+                    data['chapter_desc'],
+                    data['heading_desc'],
+                    data['subheading_desc'],
+                    data['section_name'],
                     data['level'],
                     data['category'],
                     data['description_en']  # For search vector
@@ -255,12 +288,12 @@ def main():
                 batch_processed += 1
                 
             except psycopg2.Error as e:
-                logger.error(f"❌ Database error for {hscode}: {e}")
+                logger.error(f"❌ Database error for {hs_code}: {e}")
                 batch_errors += 1
                 conn.rollback()
                 continue
             except Exception as e:
-                logger.error(f"❌ Processing error for {hscode}: {e}")
+                logger.error(f"❌ Processing error for {hs_code}: {e}")
                 batch_errors += 1
                 continue
         
@@ -323,9 +356,9 @@ def main():
             
             # Sample imported data
             cursor.execute("""
-                SELECT hscode, description_en, category, level 
+                SELECT hs_code, description_en, category, level 
                 FROM hs_codes 
-                ORDER BY hscode 
+                ORDER BY hs_code 
                 LIMIT 5
             """)
             samples = cursor.fetchall()

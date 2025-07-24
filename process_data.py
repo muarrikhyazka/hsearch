@@ -264,16 +264,27 @@ def translate_data():
         translator = Translator()
         df = pd.read_csv('data/final-dataset.csv')
         
-        # Translate description columns to a target language (e.g., Spanish)
-        target_language = 'es'  # Change as needed
+        # Translate description columns to Indonesian
+        target_language = 'id'  # Indonesian language code
         
-        # Add translated columns
-        for col in ['chapter_desc', 'heading_desc', 'subheading_desc', 'section_name']:
+        # Add Indonesian translated columns
+        translate_columns = ['description', 'chapter_desc', 'heading_desc', 'subheading_desc', 'section_name']
+        for col in translate_columns:
             if col in df.columns:
-                translated_col = f"{col}_translated"
-                df[translated_col] = df[col].apply(
-                    lambda x: translator.translate(str(x), dest=target_language).text if pd.notna(x) else x
-                )
+                translated_col = f"{col}_id"  # Indonesian translation
+                print(f"Translating {col} to Indonesian... ({df[col].notna().sum()} records)")
+                
+                def safe_translate(text):
+                    try:
+                        if pd.isna(text) or str(text).strip() == '' or str(text) == 'nan':
+                            return ''
+                        result = translator.translate(str(text), dest=target_language)
+                        return result.text if result and result.text else str(text)
+                    except Exception as e:
+                        print(f"Translation error for '{text}': {e}")
+                        return str(text)  # Return original text if translation fails
+                
+                df[translated_col] = df[col].apply(safe_translate)
         
         # Save translated data
         df.to_csv('data/final-dataset-translated.csv', index=False)
