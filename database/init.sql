@@ -1,14 +1,26 @@
 -- Enable pgvector extension
 CREATE EXTENSION IF NOT EXISTS vector;
 
--- Create main HS codes table
+-- Drop existing table if exists to ensure clean structure
+DROP TABLE IF EXISTS hs_codes CASCADE;
+DROP TABLE IF EXISTS search_analytics CASCADE;
+DROP TABLE IF EXISTS user_sessions CASCADE;
+
+-- Create main HS codes table with updated structure
 CREATE TABLE hs_codes (
     id SERIAL PRIMARY KEY,
-    section VARCHAR(10),
-    hscode VARCHAR(20) UNIQUE NOT NULL,
+    no INTEGER,
+    hs_code VARCHAR(20) UNIQUE NOT NULL,
     description_en TEXT NOT NULL,
     description_id TEXT,
-    parent_code VARCHAR(20),
+    section VARCHAR(10),
+    chapter VARCHAR(10),
+    heading VARCHAR(10),
+    subheading VARCHAR(20),
+    chapter_desc TEXT,
+    heading_desc TEXT,
+    subheading_desc TEXT,
+    section_name TEXT,
     level INTEGER NOT NULL,
     
     -- Auto-categorization
@@ -31,11 +43,14 @@ CREATE TABLE hs_codes (
 );
 
 -- Create indexes for optimal performance
+CREATE INDEX idx_hs_no ON hs_codes (no);
 CREATE INDEX idx_hs_section ON hs_codes (section);
-CREATE INDEX idx_hs_parent ON hs_codes (parent_code);  
+CREATE INDEX idx_hs_chapter ON hs_codes (chapter);
+CREATE INDEX idx_hs_heading ON hs_codes (heading);
+CREATE INDEX idx_hs_subheading ON hs_codes (subheading);
 CREATE INDEX idx_hs_level ON hs_codes (level);
 CREATE INDEX idx_hs_category ON hs_codes (category);
-CREATE INDEX idx_hs_code ON hs_codes (hscode);
+CREATE INDEX idx_hs_code ON hs_codes (hs_code);
 
 -- Vector indexes (crucial for performance)
 CREATE INDEX idx_hs_embedding_en ON hs_codes 

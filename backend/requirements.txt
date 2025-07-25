@@ -15,6 +15,7 @@ nltk==3.8.1
 python-Levenshtein==0.21.1
 fuzzywuzzy==0.18.0
 
-# Optional: Advanced ML (can be added later)
-# sentence-transformers==2.2.2
-# transformers==4.21.3
+# Vector embeddings for semantic search
+sentence-transformers==2.2.2
+torch==2.0.1
+transformers==4.34.0

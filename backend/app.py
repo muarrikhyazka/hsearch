@@ -39,6 +39,14 @@ except ImportError as e:
     AI_AVAILABLE = False
 
 try:
+    from sentence_transformers import SentenceTransformer
+    logger.info("✅ Vector embeddings available")
+    VECTOR_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"⚠️ Vector embeddings not available: {e}")
+    VECTOR_AVAILABLE = False
+
+try:
     from fuzzywuzzy import fuzz
     from Levenshtein import distance as levenshtein_distance
     logger.info("✅ Fuzzy matching available")
@@ -76,12 +84,14 @@ class SmartHSSearchEngine:
         self.db_conn = None
         self.redis_client = None
         self.tfidf_vectorizer = None
+        self.embedding_model = None
         self.hs_codes_cache = []
         self.suggestions_cache = defaultdict(list)
         
         # AI settings
         self.fuzzy_threshold = 75  # Minimum fuzzy match score
         self.similarity_threshold = 0.3  # Minimum cosine similarity
+        self.vector_similarity_threshold = 0.7  # Minimum vector similarity
         
         # Enhanced synonym dictionary
         self.synonym_dict = self._load_comprehensive_synonyms()
@@ -178,9 +188,24 @@ class SmartHSSearchEngine:
                 logger.info("🧠 AI components initialized successfully")
             else:
                 logger.warning("⚠️ No HS codes data available for AI initialization")
+            
+            # Initialize vector embedding model
+            if VECTOR_AVAILABLE:
+                self._initialize_embedding_model()
                 
         except Exception as e:
             logger.error(f"❌ AI initialization failed: {e}")
+    
+    def _initialize_embedding_model(self):
+        """Initialize sentence transformer model for vector search"""
+        try:
+            logger.info("🤖 Loading embedding model for vector search...")
+            self.embedding_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+            logger.info("✅ Embedding model loaded successfully")
+        except Exception as e:
+            logger.warning(f"⚠️ Could not load embedding model: {e}")
+            global VECTOR_AVAILABLE
+            VECTOR_AVAILABLE = False
 
     def _load_hs_codes_cache(self):
         """Load HS codes into memory for AI processing"""
@@ -319,12 +344,17 @@ class SmartHSSearchEngine:
         # 1. Exact and fuzzy database search
         db_results = self._enhanced_database_search(corrected_query, category, limit * 2)
         
-        # 2. TF-IDF semantic search (if available)
-        if self.tfidf_vectorizer is not None:
+        # 2. Vector semantic search (highest priority for accuracy)
+        if VECTOR_AVAILABLE and self.embedding_model:
+            vector_results = self._vector_semantic_search(corrected_query, category, limit)
+            db_results.extend(vector_results)
+        
+        # 3. TF-IDF semantic search (fallback)
+        elif self.tfidf_vectorizer is not None:
             semantic_results = self._tfidf_semantic_search(corrected_query, category, limit)
             db_results.extend(semantic_results)
         
-        # 3. Fuzzy matching search
+        # 4. Fuzzy matching search
         fuzzy_results = self._fuzzy_matching_search(corrected_query, category, limit)
         db_results.extend(fuzzy_results)
         
@@ -571,7 +601,65 @@ class SmartHSSearchEngine:
         
         features.extend(['synonym_expansion', 'smart_scoring', 'multi_field_search'])
         
+        if VECTOR_AVAILABLE:
+            features.append('vector_semantic_search')
+        
         return features
+
+    def _vector_semantic_search(self, query: str, category: str, limit: int) -> List[Dict]:
+        """Vector-based semantic search using pgvector"""
+        if not VECTOR_AVAILABLE or not self.embedding_model or not self.db_conn:
+            return []
+            
+        try:
+            # Generate embedding for query
+            query_embedding = self.embedding_model.encode(query, convert_to_tensor=False)
+            query_embedding = query_embedding.astype(np.float32).tolist()
+            
+            cursor = self.db_conn.cursor(cursor_factory=RealDictCursor)
+            
+            # Build category filter
+            category_filter = ""
+            if category and category != 'all':
+                category_filter = "AND category = %s"
+            
+            # Vector similarity search using cosine distance
+            sql = f"""
+            SELECT hs_code, description_en, description_id, category, level, section,
+                   chapter_desc, heading_desc, subheading_desc, section_name,
+                   1 - (embedding_combined <=> %s) as similarity_score
+            FROM hs_codes 
+            WHERE embedding_combined IS NOT NULL
+            {category_filter}
+            ORDER BY embedding_combined <=> %s
+            LIMIT %s
+            """
+            
+            params = [query_embedding, query_embedding, limit]
+            if category and category != 'all':
+                params.insert(1, category)  # Insert category parameter
+            
+            cursor.execute(sql, params)
+            results = cursor.fetchall()
+            
+            # Convert to list of dictionaries and add metadata
+            vector_results = []
+            for row in results:
+                result = dict(row)
+                result['search_type'] = 'vector_semantic'
+                result['similarity_score'] = float(result['similarity_score'])
+                
+                # Only include results above threshold
+                if result['similarity_score'] >= self.vector_similarity_threshold:
+                    vector_results.append(result)
+            
+            cursor.close()
+            logger.info(f"🎯 Vector search found {len(vector_results)} results")
+            return vector_results
+            
+        except Exception as e:
+            logger.error(f"❌ Vector search error: {e}")
+            return []
 
     def get_smart_suggestions(self, query: str, category: str = 'all', limit: int = 5) -> List[str]:
         """Generate smart suggestions based on query"""
@@ -742,11 +830,13 @@ def ai_status():
    """Get detailed AI status information"""
    return jsonify({
        'ai_available': AI_AVAILABLE,
+       'vector_search': VECTOR_AVAILABLE,
        'fuzzy_matching': FUZZY_AVAILABLE,
        'nltk_available': NLTK_AVAILABLE,
        'features': search_engine._get_ai_features_used(),
        'cache_size': len(search_engine.hs_codes_cache),
        'tfidf_initialized': search_engine.tfidf_vectorizer is not None,
+       'vector_model_loaded': search_engine.embedding_model is not None,
        'synonyms_loaded': len(search_engine.synonym_dict),
        'suggestions_cached': len(search_engine.suggestions_cache)
    })
@@ -760,6 +850,7 @@ def index():
        'status': 'running',
        'ai_features': {
            'smart_search': AI_AVAILABLE,
+           'vector_semantic_search': VECTOR_AVAILABLE,
            'fuzzy_matching': FUZZY_AVAILABLE,
            'typo_correction': FUZZY_AVAILABLE,
            'semantic_search': AI_AVAILABLE,

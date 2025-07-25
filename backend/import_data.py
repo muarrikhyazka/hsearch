@@ -11,6 +11,16 @@ import time
 import logging
 import os
 import sys
+import numpy as np
+
+# Vector embedding imports
+try:
+    from sentence_transformers import SentenceTransformer
+    EMBEDDINGS_AVAILABLE = True
+    logger.info("✅ Sentence transformers available for vector embeddings")
+except ImportError:
+    EMBEDDINGS_AVAILABLE = False
+    logger.warning("⚠️ Sentence transformers not available, skipping vector embeddings")
 
 # Configuration
 DATABASE_URL = os.getenv('DATABASE_URL', "postgresql://hsearch_user:hsearch_secure_2024@localhost:5432/hsearch_db")
@@ -18,6 +28,18 @@ DATA_FILE = "/app/data/final-dataset.csv"
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Initialize embedding model
+embedding_model = None
+if EMBEDDINGS_AVAILABLE:
+    try:
+        logger.info("🤖 Loading multilingual embedding model...")
+        # Use multilingual model for Indonesian + English support
+        embedding_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+        logger.info("✅ Embedding model loaded successfully")
+    except Exception as e:
+        logger.warning(f"⚠️ Could not load embedding model: {e}")
+        EMBEDDINGS_AVAILABLE = False
 
 def test_database_connection():
     """Test database connection with retries"""
@@ -44,6 +66,35 @@ def test_database_connection():
         except Exception as e:
             logger.error(f"💥 Unexpected error: {e}")
             return False
+
+def generate_embeddings(text_en: str, text_id: str = None):
+    """Generate vector embeddings for text"""
+    if not EMBEDDINGS_AVAILABLE or not embedding_model:
+        return None, None, None
+    
+    try:
+        # Generate English embedding
+        emb_en = embedding_model.encode(text_en, convert_to_tensor=False)
+        emb_en = emb_en.astype(np.float32)  # Ensure float32 for pgvector
+        
+        # Generate Indonesian embedding if available
+        emb_id = None
+        if text_id and text_id.strip():
+            emb_id = embedding_model.encode(text_id, convert_to_tensor=False)
+            emb_id = emb_id.astype(np.float32)
+        
+        # Generate combined embedding
+        if emb_id is not None:
+            # Average the embeddings for combined representation
+            emb_combined = (emb_en + emb_id) / 2
+        else:
+            emb_combined = emb_en
+        
+        return emb_en.tolist(), emb_id.tolist() if emb_id is not None else None, emb_combined.tolist()
+        
+    except Exception as e:
+        logger.warning(f"⚠️ Error generating embeddings: {e}")
+        return None, None, None
 
 def categorize_hs_code(description):
     """Auto-categorize HS code based on description"""
@@ -206,7 +257,10 @@ def main():
         # Drop existing table
         cursor.execute("DROP TABLE IF EXISTS hs_codes CASCADE")
         
-        # Create new table with correct structure
+        # Enable pgvector extension
+        cursor.execute("CREATE EXTENSION IF NOT EXISTS vector")
+        
+        # Create new table with vector support
         cursor.execute("""
         CREATE TABLE hs_codes (
             id SERIAL PRIMARY KEY,
@@ -224,17 +278,45 @@ def main():
             section_name TEXT,
             level INTEGER NOT NULL,
             category VARCHAR(50),
+            
+            -- Vector embeddings for semantic search
+            embedding_en VECTOR(384),
+            embedding_id VECTOR(384),
+            embedding_combined VECTOR(384),
+            
+            -- Full-text search
             search_vector_en TSVECTOR,
+            search_vector_id TSVECTOR,
+            
             created_at TIMESTAMP DEFAULT NOW(),
             updated_at TIMESTAMP DEFAULT NOW()
         )
         """)
         
-        # Create indexes
+        # Create basic indexes
         cursor.execute("CREATE INDEX idx_hs_code ON hs_codes (hs_code)")
         cursor.execute("CREATE INDEX idx_hs_category ON hs_codes (category)")
         cursor.execute("CREATE INDEX idx_hs_level ON hs_codes (level)")
+        cursor.execute("CREATE INDEX idx_hs_section ON hs_codes (section)")
+        cursor.execute("CREATE INDEX idx_hs_chapter ON hs_codes (chapter)")
+        
+        # Full-text search indexes
         cursor.execute("CREATE INDEX idx_hs_search_en ON hs_codes USING GIN (search_vector_en)")
+        cursor.execute("CREATE INDEX idx_hs_search_id ON hs_codes USING GIN (search_vector_id)")
+        
+        # Vector indexes for fast similarity search
+        cursor.execute("""
+        CREATE INDEX idx_hs_embedding_en ON hs_codes 
+        USING ivfflat (embedding_en vector_cosine_ops) WITH (lists = 100)
+        """)
+        cursor.execute("""
+        CREATE INDEX idx_hs_embedding_id ON hs_codes 
+        USING ivfflat (embedding_id vector_cosine_ops) WITH (lists = 100)
+        """)
+        cursor.execute("""
+        CREATE INDEX idx_hs_embedding_combined ON hs_codes 
+        USING ivfflat (embedding_combined vector_cosine_ops) WITH (lists = 100)
+        """)
         
         conn.commit()
         logger.info("✅ Table recreated with correct structure")
@@ -274,13 +356,26 @@ def main():
                 
                 hs_code = data['hs_code']
                 
-                # Insert into database with new structure
+                # Generate embeddings for vector search
+                description_en = data['description_en']
+                description_id = data.get('description_id', '')
+                
+                # Create combined text for embedding
+                combined_text = description_en
+                if description_id and description_id.strip():
+                    combined_text = f"{description_en} {description_id}"
+                
+                emb_en, emb_id, emb_combined = generate_embeddings(description_en, description_id)
+                
+                # Insert into database with vector embeddings
                 sql = """
                 INSERT INTO hs_codes 
                 (no, hs_code, description_en, description_id, section, chapter, heading, subheading,
                  chapter_desc, heading_desc, subheading_desc, section_name, level, category, 
-                 search_vector_en, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, to_tsvector('english', %s), NOW(), NOW())
+                 embedding_en, embedding_id, embedding_combined,
+                 search_vector_en, search_vector_id, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        to_tsvector('english', %s), to_tsvector('simple', %s), NOW(), NOW())
                 ON CONFLICT (hs_code) DO UPDATE SET
                     no = EXCLUDED.no,
                     description_en = EXCLUDED.description_en,
@@ -295,7 +390,11 @@ def main():
                     section_name = EXCLUDED.section_name,
                     level = EXCLUDED.level,
                     category = EXCLUDED.category,
+                    embedding_en = EXCLUDED.embedding_en,
+                    embedding_id = EXCLUDED.embedding_id,
+                    embedding_combined = EXCLUDED.embedding_combined,
                     search_vector_en = to_tsvector('english', EXCLUDED.description_en),
+                    search_vector_id = to_tsvector('simple', EXCLUDED.description_id),
                     updated_at = NOW()
                 """
                 
@@ -303,7 +402,7 @@ def main():
                     data['no'],
                     data['hs_code'],
                     data['description_en'],
-                    data['description_en'],  # Placeholder for Indonesian translation
+                    description_id,  # Indonesian description
                     data['section'],
                     data['chapter'],
                     data['heading'],
@@ -314,7 +413,11 @@ def main():
                     data['section_name'],
                     data['level'],
                     data['category'],
-                    data['description_en']  # For search vector
+                    emb_en,  # English embedding vector
+                    emb_id,  # Indonesian embedding vector  
+                    emb_combined,  # Combined embedding vector
+                    data['description_en'],  # For English search vector
+                    description_id or ''  # For Indonesian search vector
                 ))
                 
                 batch_processed += 1
