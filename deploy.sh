@@ -189,7 +189,7 @@ max_retries=3
 retry_count=0
 
 while [ $retry_count -lt $max_retries ]; do
-    if docker compose exec -T backend python /app/import_data.py; then
+    if docker compose exec -T backend python import_data.py; then
         print_success "Fresh data imported successfully"
         break
     else

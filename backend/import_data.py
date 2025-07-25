@@ -14,7 +14,7 @@ import sys
 
 # Configuration
 DATABASE_URL = os.getenv('DATABASE_URL', "postgresql://hsearch_user:hsearch_secure_2024@localhost:5432/hsearch_db")
-DATA_FILE = "data/final-dataset.csv"
+DATA_FILE = "/app/data/final-dataset.csv"
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
