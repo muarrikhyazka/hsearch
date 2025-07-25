@@ -200,14 +200,46 @@ def main():
         logger.error(f"❌ Database connection failed: {e}")
         sys.exit(1)
     
-    # Clear existing data
-    logger.info("🧹 Clearing existing data...")
+    # Drop and recreate table with correct structure
+    logger.info("🧹 Dropping existing table and creating new structure...")
     try:
-        cursor.execute("DELETE FROM hs_codes")
+        # Drop existing table
+        cursor.execute("DROP TABLE IF EXISTS hs_codes CASCADE")
+        
+        # Create new table with correct structure
+        cursor.execute("""
+        CREATE TABLE hs_codes (
+            id SERIAL PRIMARY KEY,
+            no INTEGER,
+            hs_code VARCHAR(20) UNIQUE NOT NULL,
+            description_en TEXT NOT NULL,
+            description_id TEXT,
+            section VARCHAR(10),
+            chapter VARCHAR(10),
+            heading VARCHAR(10),
+            subheading VARCHAR(20),
+            chapter_desc TEXT,
+            heading_desc TEXT,
+            subheading_desc TEXT,
+            section_name TEXT,
+            level INTEGER NOT NULL,
+            category VARCHAR(50),
+            search_vector_en TSVECTOR,
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP DEFAULT NOW()
+        )
+        """)
+        
+        # Create indexes
+        cursor.execute("CREATE INDEX idx_hs_code ON hs_codes (hs_code)")
+        cursor.execute("CREATE INDEX idx_hs_category ON hs_codes (category)")
+        cursor.execute("CREATE INDEX idx_hs_level ON hs_codes (level)")
+        cursor.execute("CREATE INDEX idx_hs_search_en ON hs_codes USING GIN (search_vector_en)")
+        
         conn.commit()
-        logger.info("✅ Existing data cleared")
+        logger.info("✅ Table recreated with correct structure")
     except Exception as e:
-        logger.warning(f"⚠️ Could not clear existing data: {e}")
+        logger.warning(f"⚠️ Could not recreate table: {e}")
         conn.rollback()
     
     # Process data
