@@ -662,7 +662,7 @@ class SmartHSSearchEngine:
             return []
 
     def get_smart_suggestions(self, query: str, category: str = 'all', limit: int = 5) -> List[str]:
-        """Generate smart suggestions based on query"""
+        """Generate smart keyword suggestions based on query"""
         if not self.db_conn or len(query) < 2:
             return []
             
@@ -673,48 +673,78 @@ class SmartHSSearchEngine:
                 return self.suggestions_cache[cache_key][:limit]
             
             suggestions = set()
+            query_lower = query.lower()
             
-            # Database suggestions
+            # Extract keywords from descriptions that match query
             cursor = self.db_conn.cursor()
             
             if category == 'all':
                 sql = """
-                SELECT DISTINCT description_en 
+                SELECT DISTINCT description_en, description_id
                 FROM hs_codes 
-                WHERE description_en ILIKE %s 
-                ORDER BY description_en 
+                WHERE description_en ILIKE %s OR description_id ILIKE %s
                 LIMIT %s
                 """
-                cursor.execute(sql, [f'{query}%', limit * 2])
+                cursor.execute(sql, [f'%{query}%', f'%{query}%', limit * 10])
             else:
                 sql = """
-                SELECT DISTINCT description_en 
+                SELECT DISTINCT description_en, description_id
                 FROM hs_codes 
-                WHERE description_en ILIKE %s AND category = %s 
-                ORDER BY description_en 
+                WHERE (description_en ILIKE %s OR description_id ILIKE %s) AND category = %s 
                 LIMIT %s
                 """
-                cursor.execute(sql, [f'{query}%', category, limit * 2])
+                cursor.execute(sql, [f'%{query}%', f'%{query}%', category, limit * 10])
             
+            # Extract keywords from descriptions
+            import re
             for row in cursor.fetchall():
-                suggestions.add(row[0])
+                description_en = row[0] or ""
+                description_id = row[1] or ""
+                
+                # Extract relevant keywords from descriptions
+                for text in [description_en, description_id]:
+                    if text and query_lower in text.lower():
+                        # Split by common delimiters and extract words containing query
+                        words = re.split(r'[,;:\(\)\[\]]+', text.lower())
+                        for word in words:
+                            word = word.strip()
+                            if query_lower in word and len(word) > len(query_lower):
+                                # Clean up the word
+                                clean_word = re.sub(r'[^\w\s-]', '', word).strip()
+                                if clean_word and len(clean_word.split()) <= 3:  # Max 3 words
+                                    suggestions.add(clean_word)
             
-            # AI-enhanced suggestions
-            if AI_AVAILABLE and self.hs_codes_cache:
+            # Add synonym suggestions
+            if AI_AVAILABLE:
                 expanded_terms = self.expand_query_with_synonyms(query)
                 for term in expanded_terms:
-                    if term != query.lower():
-                        for item in self.hs_codes_cache:
-                            if category == 'all' or item.get('category') == category:
-                                if term in item['description_en'].lower():
-                                    suggestions.add(item['description_en'])
-                                    if len(suggestions) >= limit * 2:
-                                        break
+                    if term != query_lower and len(term) > 2:
+                        suggestions.add(term)
+            
+            # Add popular related terms based on query
+            common_terms = {
+                'computer': ['laptop', 'desktop', 'pc', 'komputer'],
+                'animal': ['horse', 'cattle', 'pig', 'sheep', 'hewan'],
+                'textile': ['cotton', 'fabric', 'clothing', 'tekstil'],
+                'machine': ['equipment', 'apparatus', 'mesin'],
+                'food': ['meat', 'fish', 'grain', 'makanan']
+            }
+            
+            for key, terms in common_terms.items():
+                if query_lower in key or key in query_lower:
+                    suggestions.update(terms)
+            
+            # Filter and return best suggestions
+            filtered_suggestions = []
+            for suggestion in suggestions:
+                if suggestion != query_lower and len(suggestion) >= 3:
+                    filtered_suggestions.append(suggestion)
+                if len(filtered_suggestions) >= limit:
+                    break
             
             # Cache and return
-            suggestion_list = list(suggestions)[:limit]
-            self.suggestions_cache[cache_key] = suggestion_list
-            return suggestion_list
+            self.suggestions_cache[cache_key] = filtered_suggestions
+            return filtered_suggestions
             
         except Exception as e:
             logger.error(f"Suggestions error: {e}")
