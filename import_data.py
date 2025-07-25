@@ -115,10 +115,10 @@ def validate_and_clean_data(row):
         chapter = str(row['chapter']).strip() if pd.notna(row['chapter']) else ''
         heading = str(row['heading']).strip() if pd.notna(row['heading']) else ''
         subheading = str(row['subheading']).strip() if pd.notna(row['subheading']) else ''
-        chapter_desc = str(row['chapter_desc']).strip() if pd.notna(row['chapter_desc']) else ''
-        heading_desc = str(row['heading_desc']).strip() if pd.notna(row['heading_desc']) else ''
-        subheading_desc = str(row['subheading_desc']).strip() if pd.notna(row['subheading_desc']) else ''
-        section_name = str(row['section_name']).strip() if pd.notna(row['section_name']) else ''
+        chapter_desc = str(row['chapter_desc_en']).strip() if pd.notna(row['chapter_desc_en']) else ''
+        heading_desc = str(row['heading_desc_en']).strip() if pd.notna(row['heading_desc_en']) else ''
+        subheading_desc = str(row['subheading_desc_en']).strip() if pd.notna(row['subheading_desc_en']) else ''
+        section_name = str(row['section_name_en']).strip() if pd.notna(row['section_name_en']) else ''
         
         # Validate required fields
         if not hs_code or hs_code == 'nan':
@@ -174,7 +174,7 @@ def main():
         logger.info(f"📊 Columns: {list(df.columns)}")
         
         # Verify expected columns for new structure
-        expected_columns = ['no', 'hs_code', 'description', 'section', 'chapter', 'heading', 'subheading']
+        expected_columns = ['no', 'hs_code', 'description', 'section', 'chapter', 'heading', 'subheading', 'section_name_en', 'chapter_desc_en', 'heading_desc_en', 'subheading_desc_en']
         missing_columns = [col for col in expected_columns if col not in df.columns]
         if missing_columns:
             logger.error(f"❌ Missing expected columns: {missing_columns}")
