@@ -63,9 +63,35 @@ print_success "Docker and Docker Compose are installed"
 
 # Step 3: Create Required Directories
 print_status "Creating required directories..."
-mkdir -p logs nginx/ssl
-chmod 755 logs nginx/ssl
-print_success "Directories created"
+
+# Create directories with proper error handling
+if ! mkdir -p logs 2>/dev/null; then
+    print_warning "Could not create logs directory, trying with sudo..."
+    sudo mkdir -p logs || print_error "Failed to create logs directory"
+fi
+
+if ! mkdir -p nginx/ssl 2>/dev/null; then
+    print_warning "Could not create nginx/ssl directory, trying with sudo..."
+    sudo mkdir -p nginx/ssl || print_error "Failed to create nginx/ssl directory"
+fi
+
+# Set permissions with error handling
+if ! chmod 755 logs 2>/dev/null; then
+    print_warning "Could not set logs permissions, trying with sudo..."
+    sudo chmod 755 logs 2>/dev/null || print_warning "Could not set logs permissions"
+fi
+
+if ! chmod 755 nginx/ssl 2>/dev/null; then
+    print_warning "Could not set nginx/ssl permissions, trying with sudo..."
+    sudo chmod 755 nginx/ssl 2>/dev/null || print_warning "Could not set nginx/ssl permissions"
+fi
+
+# Ensure current user owns the directories
+if command -v chown &> /dev/null; then
+    sudo chown -R $USER:$USER logs nginx 2>/dev/null || print_warning "Could not set directory ownership"
+fi
+
+print_success "Directories created and configured"
 
 # Step 4: Check Required Files
 print_status "Checking required files..."
