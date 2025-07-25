@@ -106,10 +106,41 @@ done
 
 print_success "All required files present"
 
-# Step 5: Stop Existing Services
-print_status "Stopping existing services (if running)..."
+# Step 5: Clean Up Existing Deployment
+print_status "Cleaning up existing deployment..."
+
+# Stop and remove all containers, networks, and volumes
+print_status "Stopping existing services..."
 docker compose down --remove-orphans 2>/dev/null || true
-print_success "Existing services stopped"
+
+# Remove existing volumes to ensure fresh data
+print_status "Removing existing volumes (including database data)..."
+docker compose down -v 2>/dev/null || true
+
+# Clean up any existing containers with same names
+print_status "Removing existing containers..."
+containers=("hs_postgres" "hs_redis" "hs_backend" "hs_nginx")
+for container in "${containers[@]}"; do
+    if docker ps -a --format "table {{.Names}}" | grep -q "^$container$"; then
+        print_status "Removing existing container: $container"
+        docker rm -f $container 2>/dev/null || true
+    fi
+done
+
+# Clean up existing images to force rebuild
+print_status "Cleaning up existing images..."
+docker image prune -f 2>/dev/null || true
+
+# Remove project-specific volumes if they exist
+volumes=("hsearch_postgres_data" "hsearch_redis_data")
+for volume in "${volumes[@]}"; do
+    if docker volume ls --format "table {{.Name}}" | grep -q "^$volume$"; then
+        print_status "Removing existing volume: $volume"
+        docker volume rm $volume 2>/dev/null || true
+    fi
+done
+
+print_success "Existing deployment cleaned up"
 
 # Step 6: Build and Start Services
 print_status "Building and starting services..."
@@ -146,13 +177,33 @@ for container in "${containers[@]}"; do
     fi
 done
 
-# Step 8: Import Data to Database
-print_status "Importing HS Code data to database..."
-if docker compose exec -T backend python /app/import_data.py; then
-    print_success "Data imported successfully"
-else
-    print_warning "Data import may have failed, but continuing..."
-fi
+# Step 8: Import Fresh Data to Database
+print_status "Importing fresh HS Code data to database..."
+print_status "This will replace any existing data with the latest dataset..."
+
+# Wait a bit more for database to be fully ready
+sleep 10
+
+# Try data import with retry mechanism
+max_retries=3
+retry_count=0
+
+while [ $retry_count -lt $max_retries ]; do
+    if docker compose exec -T backend python /app/import_data.py; then
+        print_success "Fresh data imported successfully"
+        break
+    else
+        retry_count=$((retry_count + 1))
+        if [ $retry_count -lt $max_retries ]; then
+            print_warning "Data import attempt $retry_count failed, retrying in 10 seconds..."
+            sleep 10
+        else
+            print_error "Data import failed after $max_retries attempts"
+            print_status "Check backend logs: docker compose logs backend"
+            exit 1
+        fi
+    fi
+done
 
 # Step 9: Health Checks
 print_status "Performing health checks..."
