@@ -181,25 +181,65 @@ done
 print_status "Importing fresh HS Code data to database..."
 print_status "This will replace any existing data with the latest dataset..."
 
+# Verify data file exists before import
+print_status "Verifying data file exists..."
+if [ ! -f "data/final-dataset.csv" ]; then
+    print_error "Data file not found: data/final-dataset.csv"
+    exit 1
+fi
+
+# Check data file size
+data_size=$(du -h data/final-dataset.csv | cut -f1)
+print_status "Data file size: $data_size"
+
 # Wait a bit more for database to be fully ready
-sleep 10
+print_status "Waiting for database to be fully ready..."
+sleep 15
+
+# Check if backend container can access the data file
+print_status "Verifying data file access from container..."
+if ! docker compose exec -T backend ls -la /app/data/final-dataset.csv; then
+    print_error "Data file not accessible from backend container"
+    print_status "Checking volume mounts..."
+    docker compose exec -T backend ls -la /app/data/ || print_error "Data directory not mounted"
+    exit 1
+fi
 
 # Try data import with retry mechanism
 max_retries=3
 retry_count=0
 
 while [ $retry_count -lt $max_retries ]; do
+    print_status "Data import attempt $((retry_count + 1))/$max_retries..."
+    
     if docker compose exec -T backend python import_data.py; then
         print_success "Fresh data imported successfully"
+        
+        # Verify import success by checking record count
+        print_status "Verifying data import..."
+        record_count=$(docker compose exec -T postgres psql -U hsearch_user -d hsearch_db -t -c "SELECT COUNT(*) FROM hs_codes;" 2>/dev/null | tr -d ' \n' || echo "0")
+        
+        if [ "$record_count" -gt "10000" ]; then
+            print_success "Data verification passed: $record_count records imported"
+            break
+        else
+            print_warning "Data verification failed: only $record_count records found"
+        fi
+        
         break
     else
         retry_count=$((retry_count + 1))
         if [ $retry_count -lt $max_retries ]; then
-            print_warning "Data import attempt $retry_count failed, retrying in 10 seconds..."
-            sleep 10
+            print_warning "Data import attempt $retry_count failed, retrying in 15 seconds..."
+            print_status "Checking backend logs..."
+            docker compose logs --tail=10 backend
+            sleep 15
         else
             print_error "Data import failed after $max_retries attempts"
-            print_status "Check backend logs: docker compose logs backend"
+            print_status "Backend logs:"
+            docker compose logs --tail=20 backend
+            print_status "Database logs:"
+            docker compose logs --tail=10 postgres
             exit 1
         fi
     fi
