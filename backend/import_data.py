@@ -273,16 +273,16 @@ def main():
         else:
             logger.info("  ✅ No existing table found")
         
-        # Drop existing table with timeout
-        logger.info("  ⏳ Dropping existing table...")
-        cursor.execute("SET statement_timeout = '60s'")  # 60 second timeout
-        cursor.execute("DROP TABLE IF EXISTS hs_codes CASCADE")
-        cursor.execute("RESET statement_timeout")
-        logger.info("  ✅ Table dropped successfully")
+        # # Drop existing table with timeout
+        # logger.info("  ⏳ Dropping existing table...")
+        # cursor.execute("SET statement_timeout = '60s'")  # 60 second timeout
+        # cursor.execute("DROP TABLE IF EXISTS hs_codes CASCADE")
+        # cursor.execute("RESET statement_timeout")
+        # logger.info("  ✅ Table dropped successfully")
         
-        # Enable pgvector extension
-        logger.info("  ⏳ Enabling pgvector extension...")
-        cursor.execute("CREATE EXTENSION IF NOT EXISTS vector")
+        # # Enable pgvector extension
+        # logger.info("  ⏳ Enabling pgvector extension...")
+        # cursor.execute("CREATE EXTENSION IF NOT EXISTS vector")
         
         # Create new table with vector support
         logger.info("  ⏳ Creating new table structure...")
