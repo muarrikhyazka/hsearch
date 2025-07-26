@@ -5,20 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HS Code AI Search - Smart Search System</title>
     <style>
+        :root {
+            /* Light mode colors */
+            --bg-primary: #f8fafc;
+            --bg-secondary: #e2e8f0;
+            --bg-card: white;
+            --bg-input: #fafafa;
+            --bg-hover: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #475569;
+            --border-color: #e2e8f0;
+            --border-focus: #3b82f6;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --accent-color: #3b82f6;
+        }
+
+        [data-theme="dark"] {
+            /* Dark mode colors */
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --bg-input: #475569;
+            --bg-hover: #475569;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-color: #475569;
+            --border-focus: #60a5fa;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --accent-color: #60a5fa;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            min-height: 100vh; color: #1e293b; line-height: 1.6;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            min-height: 100vh; 
+            color: var(--text-primary); 
+            line-height: 1.6;
+            transition: background 0.3s ease, color 0.3s ease;
         }
         .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
         .header { text-align: center; margin-bottom: 40px; }
         .header h1 { 
-            color: #0f172a; font-size: 2.5rem; font-weight: 700; 
+            color: var(--text-primary); font-size: 2.5rem; font-weight: 700; 
             margin-bottom: 12px; letter-spacing: -0.025em;
         }
         .header p { 
-            color: #64748b; font-size: 1.1rem; font-weight: 400;
+            color: var(--text-secondary); font-size: 1.1rem; font-weight: 400;
             max-width: 600px; margin: 0 auto;
         }
         .status { 
@@ -31,9 +66,10 @@
         .status.offline { background: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.2); }
         
         .search-container {
-            background: white; border-radius: 16px; padding: 32px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            border: 1px solid #e2e8f0; margin-bottom: 32px;
+            background: var(--bg-card); border-radius: 16px; padding: 32px;
+            box-shadow: 0 4px 6px -1px var(--shadow), 0 2px 4px -1px var(--shadow);
+            border: 1px solid var(--border-color); margin-bottom: 32px;
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
         
         .search-input-wrapper { 
@@ -42,11 +78,12 @@
         .search-input-container { position: relative; flex: 1; }
         .search-input {
             width: 100%; padding: 16px 20px; font-size: 1rem; font-weight: 400;
-            border: 2px solid #e2e8f0; border-radius: 12px;
-            transition: all 0.2s ease; background: #fafafa;
+            border: 2px solid var(--border-color); border-radius: 12px;
+            transition: all 0.2s ease; background: var(--bg-input);
+            color: var(--text-primary);
         }
         .search-input:focus { 
-            border-color: #3b82f6; outline: none; background: white;
+            border-color: var(--border-focus); outline: none; background: var(--bg-card);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
         .search-input.ai-enhanced { 
@@ -54,17 +91,18 @@
         }
         
         .suggestions {
-            position: absolute; top: 100%; left: 0; right: 0; background: white;
-            border: 1px solid #e2e8f0; border-radius: 12px; margin-top: 8px;
+            position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card);
+            border: 1px solid var(--border-color); border-radius: 12px; margin-top: 8px;
             max-height: 240px; overflow-y: auto; display: none; z-index: 1000;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 15px -3px var(--shadow), 0 4px 6px -2px var(--shadow);
         }
         .suggestion-item {
             padding: 12px 16px; cursor: pointer; transition: all 0.2s ease;
-            border-bottom: 1px solid #f1f5f9; font-size: 0.875rem; font-weight: 500;
+            border-bottom: 1px solid var(--border-color); font-size: 0.875rem; font-weight: 500;
             display: flex; align-items: center; gap: 8px;
+            color: var(--text-primary);
         }
-        .suggestion-item:hover { background: #f8fafc; }
+        .suggestion-item:hover, .suggestion-item.active { background: var(--bg-hover); }
         .suggestion-item:last-child { border-bottom: none; }
         .suggestion-ai { background: linear-gradient(90deg, #faf5ff, #f8fafc); }
         .suggestion-keyword { 
@@ -74,11 +112,11 @@
         
         .ai-toggle-container {
             display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
+            background: var(--bg-hover); border: 1px solid var(--border-color); border-radius: 12px;
             min-width: 180px;
         }
         .ai-toggle-label { 
-            font-size: 0.875rem; font-weight: 500; color: #475569; 
+            font-size: 0.875rem; font-weight: 500; color: var(--text-muted); 
             flex: 1; user-select: none;
         }
         .toggle-switch {
@@ -101,11 +139,11 @@
         .controls-left { display: flex; align-items: center; gap: 16px; flex: 1; }
         
         .category-select { 
-            padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; 
-            font-size: 0.875rem; background: white; min-width: 160px;
-            transition: border-color 0.2s ease;
+            padding: 12px 16px; border: 2px solid var(--border-color); border-radius: 12px; 
+            font-size: 0.875rem; background: var(--bg-card); min-width: 160px;
+            transition: border-color 0.2s ease; color: var(--text-primary);
         }
-        .category-select:focus { border-color: #3b82f6; outline: none; }
+        .category-select:focus { border-color: var(--border-focus); outline: none; }
         
         .search-btn {
             background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none;
@@ -124,9 +162,19 @@
             border-radius: 8px; font-size: 0.75rem; font-weight: 500;
             border: 1px solid rgba(34, 197, 94, 0.2);
         }
+
+        .theme-toggle {
+            background: var(--bg-card); border: 2px solid var(--border-color);
+            border-radius: 12px; padding: 8px 12px; cursor: pointer;
+            font-size: 1.2rem; margin-left: 12px;
+            transition: all 0.2s ease; color: var(--text-primary);
+        }
+        .theme-toggle:hover {
+            background: var(--bg-hover); transform: scale(1.05);
+        }
         
-        .results { background: white; border-radius: 12px; padding: 18px; margin-top: 20px; display: none; }
-        .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; }
+        .results { background: var(--bg-card); border-radius: 12px; padding: 18px; margin-top: 20px; display: none; transition: background 0.3s ease; }
+        .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); }
         
         .ai-insights {
             background: linear-gradient(45deg, #e8f5e8, #f0f8ff); border-radius: 8px; padding: 12px; margin-bottom: 15px;
@@ -137,15 +185,15 @@
         
         .result-item {
             padding: 18px; border-left: 4px solid #667eea; margin-bottom: 15px;
-            background: #f8f9fa; border-radius: 0 10px 10px 0; transition: all 0.3s ease;
+            background: var(--bg-hover); border-radius: 0 10px 10px 0; transition: all 0.3s ease;
         }
-        .result-item:hover { transform: translateX(3px); box-shadow: 0 3px 12px rgba(0,0,0,0.1); }
-        .result-item.ai-enhanced { border-left-color: #9c27b0; background: linear-gradient(135deg, #f8f9fa, #f0f8ff); }
+        .result-item:hover { transform: translateX(3px); box-shadow: 0 3px 12px var(--shadow); }
+        .result-item.ai-enhanced { border-left-color: #9c27b0; }
         
         .result-code { font-weight: bold; font-size: 1.1rem; color: #667eea; margin-bottom: 8px; }
-        .result-desc { color: #333; margin-bottom: 8px; font-weight: 600; }
-        .result-desc-id { color: #555; margin-bottom: 8px; font-style: italic; }
-        .result-meta { color: #666; font-size: 0.85rem; margin-bottom: 8px; }
+        .result-desc { color: var(--text-primary); margin-bottom: 8px; font-weight: 600; }
+        .result-desc-id { color: var(--text-secondary); margin-bottom: 8px; font-style: italic; }
+        .result-meta { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px; }
         
         .result-scores {
             display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;
@@ -185,6 +233,9 @@
             <div id="statusContainer">
                 <div class="status" id="systemStatus">🔄 Connecting...</div>
                 <div class="status ai-active" id="aiStatus">🧠 AI Loading...</div>
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+                    <span id="themeIcon">🌙</span>
+                </button>
             </div>
         </div>
 
@@ -210,6 +261,13 @@
                         <option value="all">🔍 All Categories</option>
                     </select>
                     
+                    <select class="category-select" id="sortSelect" style="display: none;">
+                        <option value="relevance">📊 Sort by Relevance</option>
+                        <option value="code">🔢 Sort by HS Code</option>
+                        <option value="alphabetical">🔤 Sort Alphabetically</option>
+                        <option value="category">📁 Sort by Category</option>
+                    </select>
+                    
                     <button class="search-btn" onclick="performSearch()">Search</button>
                 </div>
                 
@@ -228,6 +286,8 @@
         let aiEnabled = true;
         let aiFeatures = [];
         let suggestionTimeout;
+        let currentResults = [];
+        let currentSortOrder = 'relevance';
 
         // Check system and AI status
         async function checkStatus() {
@@ -392,9 +452,42 @@
             }
         }
 
+        // Sort results based on selected option
+        function sortResults(results, sortBy) {
+            const sortedResults = [...results];
+            
+            switch(sortBy) {
+                case 'code':
+                    return sortedResults.sort((a, b) => a.hscode.localeCompare(b.hscode));
+                case 'alphabetical':
+                    return sortedResults.sort((a, b) => a.description_en.localeCompare(b.description_en));
+                case 'category':
+                    return sortedResults.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
+                case 'relevance':
+                default:
+                    return sortedResults.sort((a, b) => {
+                        const scoreA = a.ai_score || a.relevance_score || a.semantic_score || 0;
+                        const scoreB = b.ai_score || b.relevance_score || b.semantic_score || 0;
+                        return scoreB - scoreA;
+                    });
+            }
+        }
+
+        // Handle sort change
+        function handleSortChange() {
+            const sortSelect = document.getElementById('sortSelect');
+            currentSortOrder = sortSelect.value;
+            
+            if (currentResults.length > 0) {
+                const sortedResults = sortResults(currentResults, currentSortOrder);
+                displayResultsOnly(sortedResults);
+            }
+        }
+
         // Display AI-enhanced search results
         function displayResults(data) {
             const resultsDiv = document.getElementById('results');
+            const sortSelect = document.getElementById('sortSelect');
             
             if (!data.results || data.results.length === 0) {
                 resultsDiv.innerHTML = `
@@ -405,13 +498,19 @@
                             `<div class="success">AI Suggestions: ${data.typo_suggestions.join(', ')}</div>` : ''}
                     </div>
                 `;
+                sortSelect.style.display = 'none';
                 return;
             }
+
+            // Store results and show sort options
+            currentResults = data.results;
+            sortSelect.style.display = 'block';
+            sortSelect.value = currentSortOrder;
 
             let html = `
                 <div class="results-header">
                     <h3>Found ${data.results.length} results</h3>
-                    <div style="font-size: 0.9rem; color: #666;">
+                    <div style="font-size: 0.9rem; color: var(--text-muted);">
                         ${data.execution_time}s | ${data.search_type}
                     </div>
                 </div>
@@ -441,8 +540,32 @@
                 html += `</div>`;
             }
 
-            // Results
-            data.results.forEach(item => {
+            // Sort and display results
+            const sortedResults = sortResults(data.results, currentSortOrder);
+            html += generateResultsHTML(sortedResults);
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // Display only results (for sorting without re-rendering everything)
+        function displayResultsOnly(results) {
+            const resultsDiv = document.getElementById('results');
+            const existingHeader = resultsDiv.querySelector('.results-header');
+            const existingInsights = resultsDiv.querySelector('.ai-insights');
+            
+            let html = '';
+            if (existingHeader) html += existingHeader.outerHTML;
+            if (existingInsights) html += existingInsights.outerHTML;
+            
+            html += generateResultsHTML(results);
+            resultsDiv.innerHTML = html;
+        }
+
+        // Generate HTML for results
+        function generateResultsHTML(results) {
+            let html = '';
+            
+            results.forEach(item => {
                 const isAIEnhanced = item.ai_score || item.semantic_score || item.fuzzy_score;
                 
                 html += `
@@ -471,7 +594,7 @@
                 html += `</div>`;
             });
 
-            resultsDiv.innerHTML = html;
+            return html;
         }
 
         // Toggle AI
@@ -501,7 +624,65 @@
         function clearResults() {
             document.getElementById('results').style.display = 'none';
             document.getElementById('searchInput').value = '';
+            document.getElementById('sortSelect').style.display = 'none';
+            currentResults = [];
             hideSuggestions();
+        }
+
+        // Dark mode toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('themeIcon');
+            const currentTheme = html.getAttribute('data-theme');
+            
+            if (currentTheme === 'dark') {
+                html.removeAttribute('data-theme');
+                themeIcon.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                themeIcon.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Initialize theme from localStorage
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const themeIcon = document.getElementById('themeIcon');
+            
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeIcon.textContent = '☀️';
+            } else {
+                themeIcon.textContent = '🌙';
+            }
+        }
+
+        // Show keyboard shortcuts hint
+        function showKeyboardHints() {
+            // Add keyboard shortcuts info to the page
+            const hintsHTML = `
+                <div style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; z-index: 1000; opacity: 0.7; transition: opacity 0.2s;">
+                    <div><kbd>Ctrl+K</kbd> Focus search</div>
+                    <div><kbd>Ctrl+Enter</kbd> Search</div>
+                    <div><kbd>Esc</kbd> Clear</div>
+                    <div><kbd>Ctrl+/</kbd> Toggle AI</div>
+                </div>
+            `;
+            
+            // Only show for first 10 seconds
+            const hintsDiv = document.createElement('div');
+            hintsDiv.innerHTML = hintsHTML;
+            document.body.appendChild(hintsDiv);
+            
+            setTimeout(() => {
+                if (hintsDiv && hintsDiv.parentNode) {
+                    hintsDiv.style.opacity = '0';
+                    setTimeout(() => hintsDiv.remove(), 300);
+                }
+            }, 10000);
         }
 
         // Event listeners
@@ -529,13 +710,89 @@
             }
         });
 
+        // Sort select event listener
+        document.getElementById('sortSelect').addEventListener('change', handleSortChange);
+
+        // Keyboard shortcuts for power users
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+K or Cmd+K: Focus search input
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+                document.getElementById('searchInput').select();
+                return;
+            }
+            
+            // Ctrl+Enter or Cmd+Enter: Perform search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                performSearch();
+                return;
+            }
+            
+            // Escape: Clear search and results
+            if (e.key === 'Escape') {
+                clearResults();
+                document.getElementById('searchInput').blur();
+                hideSuggestions();
+                return;
+            }
+            
+            // Ctrl+/ or Cmd+/: Toggle AI
+            if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+                e.preventDefault();
+                toggleAI();
+                return;
+            }
+            
+            // Alt+1-9: Select category by number
+            if (e.altKey && e.key >= '1' && e.key <= '9') {
+                e.preventDefault();
+                const categorySelect = document.getElementById('categorySelect');
+                const index = parseInt(e.key) - 1;
+                if (index < categorySelect.options.length) {
+                    categorySelect.selectedIndex = index;
+                }
+                return;
+            }
+            
+            // Arrow keys for suggestion navigation
+            const suggestionsDiv = document.getElementById('suggestions');
+            if (suggestionsDiv.style.display === 'block') {
+                const suggestions = suggestionsDiv.querySelectorAll('.suggestion-item');
+                const active = suggestionsDiv.querySelector('.suggestion-item.active');
+                let activeIndex = active ? Array.from(suggestions).indexOf(active) : -1;
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (active) active.classList.remove('active');
+                    activeIndex = (activeIndex + 1) % suggestions.length;
+                    suggestions[activeIndex].classList.add('active');
+                    suggestions[activeIndex].scrollIntoView({ block: 'nearest' });
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (active) active.classList.remove('active');
+                    activeIndex = activeIndex <= 0 ? suggestions.length - 1 : activeIndex - 1;
+                    suggestions[activeIndex].classList.add('active');
+                    suggestions[activeIndex].scrollIntoView({ block: 'nearest' });
+                } else if (e.key === 'Enter' && active) {
+                    e.preventDefault();
+                    active.click();
+                }
+            }
+        });
+
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
             checkStatus();
             loadCategories();
             
             // Check status every 30 seconds
             setInterval(checkStatus, 30000);
+            
+            // Show keyboard shortcuts hint
+            showKeyboardHints();
         });
     </script>
 </body>
