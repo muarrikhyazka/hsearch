@@ -12,6 +12,7 @@ import logging
 import os
 import sys
 import numpy as np
+from tqdm import tqdm
 
 # Configure logging first
 logging.basicConfig(level=logging.INFO)
@@ -45,7 +46,7 @@ if EMBEDDINGS_AVAILABLE:
 def test_database_connection():
     """Test database connection with retries"""
     max_retries = 5
-    for attempt in range(max_retries):
+    for attempt in tqdm(range(max_retries), desc="Testing DB connection", unit="attempt"):
         try:
             logger.info(f"Testing database connection (attempt {attempt + 1}/{max_retries})...")
             conn = psycopg2.connect(DATABASE_URL)
@@ -354,7 +355,10 @@ def main():
     
     logger.info(f"📊 Processing {total_records} records in batches of {batch_size}...")
     
-    for i in range(0, total_records, batch_size):
+    # Create progress bar for batches
+    batch_progress = tqdm(range(0, total_records, batch_size), desc="Processing batches", unit="batch")
+    
+    for i in batch_progress:
         batch_end = min(i + batch_size, total_records)
         batch_df = df[i:batch_end].copy()
         
@@ -363,7 +367,11 @@ def main():
         batch_processed = 0
         batch_errors = 0
         
-        for idx, row in batch_df.iterrows():
+        # Create progress bar for records in current batch
+        record_progress = tqdm(batch_df.iterrows(), desc=f"Batch {i//batch_size + 1} records", 
+                              total=len(batch_df), unit="record", leave=False)
+        
+        for idx, row in record_progress:
             hscode = "UNKNOWN"
             
             try:
@@ -444,6 +452,9 @@ def main():
                 
                 batch_processed += 1
                 
+                # Update progress bar description with current HS code
+                record_progress.set_postfix({"HS Code": hs_code, "Processed": batch_processed, "Errors": batch_errors})
+                
             except psycopg2.Error as e:
                 logger.error(f"❌ Database error for {hs_code}: {e}")
                 batch_errors += 1
@@ -452,6 +463,7 @@ def main():
             except Exception as e:
                 logger.error(f"❌ Processing error for {hs_code}: {e}")
                 batch_errors += 1
+                record_progress.set_postfix({"HS Code": hs_code, "Processed": batch_processed, "Errors": batch_errors})
                 continue
         
         # Commit batch
@@ -464,6 +476,9 @@ def main():
                 logger.info(f"✅ Batch completed: {batch_processed} processed, {batch_errors} errors")
             else:
                 logger.warning(f"⚠️ Batch completed: 0 processed, {batch_errors} errors")
+            
+            # Update main progress bar
+            batch_progress.set_postfix({"Total Processed": processed_count, "Total Errors": error_count})
                 
         except Exception as e:
             logger.error(f"❌ Failed to commit batch: {e}")
@@ -473,29 +488,31 @@ def main():
     logger.info("\n🔧 Creating vector indexes for optimal search performance...")
     logger.info("   ⏳ This may take a few minutes for large datasets...")
     try:
-        # Full-text search indexes
-        logger.info("   • Creating full-text search indexes...")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_hs_search_en ON hs_codes USING GIN (search_vector_en)")
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_hs_search_id ON hs_codes USING GIN (search_vector_id)")
+        # Define index creation tasks
+        index_tasks = [
+            ("Full-text search (English)", "CREATE INDEX IF NOT EXISTS idx_hs_search_en ON hs_codes USING GIN (search_vector_en)"),
+            ("Full-text search (Indonesian)", "CREATE INDEX IF NOT EXISTS idx_hs_search_id ON hs_codes USING GIN (search_vector_id)")
+        ]
         
-        # Vector indexes for fast similarity search (only if embeddings are available)
         if EMBEDDINGS_AVAILABLE:
-            logger.info("   • Creating vector embeddings indexes...")
-            cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_hs_embedding_en ON hs_codes 
-            USING ivfflat (embedding_en vector_cosine_ops) WITH (lists = 100)
-            """)
-            cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_hs_embedding_id ON hs_codes 
-            USING ivfflat (embedding_id vector_cosine_ops) WITH (lists = 100)
-            """)
-            cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_hs_embedding_combined ON hs_codes 
-            USING ivfflat (embedding_combined vector_cosine_ops) WITH (lists = 100)
-            """)
-            logger.info("   ✅ Vector indexes created successfully")
+            index_tasks.extend([
+                ("Vector embedding (English)", """CREATE INDEX IF NOT EXISTS idx_hs_embedding_en ON hs_codes 
+                USING ivfflat (embedding_en vector_cosine_ops) WITH (lists = 100)"""),
+                ("Vector embedding (Indonesian)", """CREATE INDEX IF NOT EXISTS idx_hs_embedding_id ON hs_codes 
+                USING ivfflat (embedding_id vector_cosine_ops) WITH (lists = 100)"""),
+                ("Vector embedding (Combined)", """CREATE INDEX IF NOT EXISTS idx_hs_embedding_combined ON hs_codes 
+                USING ivfflat (embedding_combined vector_cosine_ops) WITH (lists = 100)""")
+            ])
+        
+        # Create indexes with progress bar
+        for desc, sql in tqdm(index_tasks, desc="Creating indexes", unit="index"):
+            logger.info(f"   • Creating {desc} index...")
+            cursor.execute(sql)
+            
+        if not EMBEDDINGS_AVAILABLE:
+            logger.info("   ⚠️ Skipped vector indexes - embeddings not available")
         else:
-            logger.info("   ⚠️ Skipping vector indexes - embeddings not available")
+            logger.info("   ✅ All indexes created successfully")
         
         conn.commit()
         logger.info("✅ All indexes created successfully")
