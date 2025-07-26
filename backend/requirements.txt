@@ -15,7 +15,8 @@ nltk==3.8.1
 python-Levenshtein==0.21.1
 fuzzywuzzy==0.18.0
 
-# Vector embeddings for semantic search
-sentence-transformers==2.2.2
-torch==2.0.1
+# Vector embeddings for semantic search (CPU-only for faster install)
+--find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+torch==2.0.1+cpu
 transformers==4.34.0
+sentence-transformers==2.2.2
