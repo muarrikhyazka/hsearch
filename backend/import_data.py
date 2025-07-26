@@ -256,12 +256,15 @@ def main():
     logger.info("🧹 Dropping existing table and creating new structure...")
     try:
         # Drop existing table
+        logger.info("  ⏳ Dropping existing table...")
         cursor.execute("DROP TABLE IF EXISTS hs_codes CASCADE")
         
         # Enable pgvector extension
+        logger.info("  ⏳ Enabling pgvector extension...")
         cursor.execute("CREATE EXTENSION IF NOT EXISTS vector")
         
         # Create new table with vector support
+        logger.info("  ⏳ Creating new table structure...")
         cursor.execute("""
         CREATE TABLE hs_codes (
             id SERIAL PRIMARY KEY,
@@ -294,30 +297,15 @@ def main():
         )
         """)
         
-        # Create basic indexes
+        # Create only essential indexes now (defer expensive indexes until after data import)
+        logger.info("  ⏳ Creating essential indexes...")
         cursor.execute("CREATE INDEX idx_hs_code ON hs_codes (hs_code)")
         cursor.execute("CREATE INDEX idx_hs_category ON hs_codes (category)")
         cursor.execute("CREATE INDEX idx_hs_level ON hs_codes (level)")
         cursor.execute("CREATE INDEX idx_hs_section ON hs_codes (section)")
         cursor.execute("CREATE INDEX idx_hs_chapter ON hs_codes (chapter)")
         
-        # Full-text search indexes
-        cursor.execute("CREATE INDEX idx_hs_search_en ON hs_codes USING GIN (search_vector_en)")
-        cursor.execute("CREATE INDEX idx_hs_search_id ON hs_codes USING GIN (search_vector_id)")
-        
-        # Vector indexes for fast similarity search
-        cursor.execute("""
-        CREATE INDEX idx_hs_embedding_en ON hs_codes 
-        USING ivfflat (embedding_en vector_cosine_ops) WITH (lists = 100)
-        """)
-        cursor.execute("""
-        CREATE INDEX idx_hs_embedding_id ON hs_codes 
-        USING ivfflat (embedding_id vector_cosine_ops) WITH (lists = 100)
-        """)
-        cursor.execute("""
-        CREATE INDEX idx_hs_embedding_combined ON hs_codes 
-        USING ivfflat (embedding_combined vector_cosine_ops) WITH (lists = 100)
-        """)
+        logger.info("  ✅ Essential indexes created - deferring vector indexes until after data import")
         
         conn.commit()
         logger.info("✅ Table recreated with correct structure")
@@ -447,6 +435,40 @@ def main():
         except Exception as e:
             logger.error(f"❌ Failed to commit batch: {e}")
             conn.rollback()
+    
+    # Create vector indexes after data import (much faster with data present)
+    logger.info("\n🔧 Creating vector indexes for optimal search performance...")
+    logger.info("   ⏳ This may take a few minutes for large datasets...")
+    try:
+        # Full-text search indexes
+        logger.info("   • Creating full-text search indexes...")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_hs_search_en ON hs_codes USING GIN (search_vector_en)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_hs_search_id ON hs_codes USING GIN (search_vector_id)")
+        
+        # Vector indexes for fast similarity search (only if embeddings are available)
+        if EMBEDDINGS_AVAILABLE:
+            logger.info("   • Creating vector embeddings indexes...")
+            cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_hs_embedding_en ON hs_codes 
+            USING ivfflat (embedding_en vector_cosine_ops) WITH (lists = 100)
+            """)
+            cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_hs_embedding_id ON hs_codes 
+            USING ivfflat (embedding_id vector_cosine_ops) WITH (lists = 100)
+            """)
+            cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_hs_embedding_combined ON hs_codes 
+            USING ivfflat (embedding_combined vector_cosine_ops) WITH (lists = 100)
+            """)
+            logger.info("   ✅ Vector indexes created successfully")
+        else:
+            logger.info("   ⚠️ Skipping vector indexes - embeddings not available")
+        
+        conn.commit()
+        logger.info("✅ All indexes created successfully")
+    except Exception as e:
+        logger.warning(f"⚠️ Could not create some indexes: {e}")
+        conn.rollback()
     
     # Final statistics
     logger.info(f"\n📊 IMPORT SUMMARY:")
