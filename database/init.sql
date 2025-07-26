@@ -52,15 +52,8 @@ CREATE INDEX idx_hs_level ON hs_codes (level);
 CREATE INDEX idx_hs_category ON hs_codes (category);
 CREATE INDEX idx_hs_code ON hs_codes (hs_code);
 
--- Vector indexes (crucial for performance)
-CREATE INDEX idx_hs_embedding_en ON hs_codes 
-    USING ivfflat (embedding_en vector_cosine_ops) WITH (lists = 100);
-CREATE INDEX idx_hs_embedding_id ON hs_codes 
-    USING ivfflat (embedding_id vector_cosine_ops) WITH (lists = 100);
-
--- Full-text search indexes
-CREATE INDEX idx_hs_search_en ON hs_codes USING GIN (search_vector_en);
-CREATE INDEX idx_hs_search_id ON hs_codes USING GIN (search_vector_id);
+-- Note: Vector indexes and full-text search indexes are created by import_data.py 
+-- after data is loaded for better performance
 
 -- Create user sessions table for analytics
 CREATE TABLE user_sessions (

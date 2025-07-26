@@ -253,11 +253,11 @@ def main():
         logger.error(f"❌ Database connection failed: {e}")
         sys.exit(1)
     
-    # Drop and recreate table with correct structure
-    logger.info("🧹 Dropping existing table and creating new structure...")
+    # Prepare table for data import (assumes table structure already exists from init.sql)
+    logger.info("🧹 Preparing table for data import...")
     try:
-        # Check if table exists and get info
-        logger.info("  🔍 Checking existing table...")
+        # Check if table exists
+        logger.info("  🔍 Verifying table exists...")
         cursor.execute("""
             SELECT schemaname, tablename, tableowner 
             FROM pg_tables 
@@ -265,87 +265,57 @@ def main():
         """)
         existing_table = cursor.fetchone()
         
-        if existing_table:
-            logger.info(f"  📋 Found existing table: {existing_table}")
-            # Check table size
-            cursor.execute("SELECT COUNT(*) FROM hs_codes")
-            record_count = cursor.fetchone()[0]
-            logger.info(f"  📊 Existing records: {record_count:,}")
-        else:
-            logger.info("  ✅ No existing table found")
-        
-        # # Drop existing table with timeout
-        # logger.info("  ⏳ Dropping existing table...")
-        # cursor.execute("SET statement_timeout = '60s'")  # 60 second timeout
-        # cursor.execute("DROP TABLE IF EXISTS hs_codes CASCADE")
-        # cursor.execute("RESET statement_timeout")
-        # logger.info("  ✅ Table dropped successfully")
-        
-        # # Enable pgvector extension
-        # logger.info("  ⏳ Enabling pgvector extension...")
-        # cursor.execute("CREATE EXTENSION IF NOT EXISTS vector")
-        
-        # Create new table with vector support
-        logger.info("  ⏳ Creating new table structure...")
-        cursor.execute("""
-        CREATE TABLE hs_codes (
-            id SERIAL PRIMARY KEY,
-            no INTEGER,
-            hs_code VARCHAR(20) UNIQUE NOT NULL,
-            description_en TEXT NOT NULL,
-            description_id TEXT,
-            section VARCHAR(10),
-            chapter VARCHAR(10),
-            heading VARCHAR(10),
-            subheading VARCHAR(20),
-            chapter_desc TEXT,
-            heading_desc TEXT,
-            subheading_desc TEXT,
-            section_name TEXT,
-            level INTEGER NOT NULL,
-            category VARCHAR(50),
-            
-            -- Vector embeddings for semantic search
-            embedding_en VECTOR(384),
-            embedding_id VECTOR(384),
-            embedding_combined VECTOR(384),
-            
-            -- Full-text search
-            search_vector_en TSVECTOR,
-            search_vector_id TSVECTOR,
-            
-            created_at TIMESTAMP DEFAULT NOW(),
-            updated_at TIMESTAMP DEFAULT NOW()
-        )
-        """)
-        
-        # Create only essential indexes now (defer expensive indexes until after data import)
-        logger.info("  ⏳ Creating essential indexes...")
-        cursor.execute("CREATE INDEX idx_hs_code ON hs_codes (hs_code)")
-        cursor.execute("CREATE INDEX idx_hs_category ON hs_codes (category)")
-        cursor.execute("CREATE INDEX idx_hs_level ON hs_codes (level)")
-        cursor.execute("CREATE INDEX idx_hs_section ON hs_codes (section)")
-        cursor.execute("CREATE INDEX idx_hs_chapter ON hs_codes (chapter)")
-        
-        logger.info("  ✅ Essential indexes created - deferring vector indexes until after data import")
-        
-        conn.commit()
-        logger.info("✅ Table recreated with correct structure")
-    except Exception as e:
-        logger.error(f"❌ Could not recreate table: {e}")
-        logger.info("🔄 Trying alternative approach...")
-        conn.rollback()
-        
-        # Alternative: Try to truncate instead of drop
-        try:
-            logger.info("  ⏳ Trying to truncate existing table...")
-            cursor.execute("TRUNCATE TABLE hs_codes CASCADE")
-            logger.info("  ✅ Table truncated, skipping structure recreation")
-        except Exception as e2:
-            logger.error(f"❌ Truncate also failed: {e2}")
-            logger.info("💡 Please manually drop the table and try again:")
-            logger.info("   docker compose exec postgres psql -U hsearch_user -d hsearch_db -c 'DROP TABLE IF EXISTS hs_codes CASCADE;'")
+        if not existing_table:
+            logger.error("  ❌ Table 'hs_codes' not found!")
+            logger.error("💡 Please ensure the database is initialized with init.sql first:")
+            logger.error("   docker compose exec hs_postgres psql -U hsearch_user -d hsearch_db -f /docker-entrypoint-initdb.d/init.sql")
             sys.exit(1)
+        
+        logger.info(f"  ✅ Table found: {existing_table}")
+        
+        # Check table size and clear if needed
+        logger.info("  📊 Checking existing data...")
+        cursor.execute("SELECT COUNT(*) FROM hs_codes")
+        record_count = cursor.fetchone()[0]
+        logger.info(f"  📊 Current records: {record_count:,}")
+        
+        if record_count > 0:
+            logger.info("  ⏳ Clearing existing data...")
+            start_time = time.time()
+            cursor.execute("TRUNCATE TABLE hs_codes RESTART IDENTITY CASCADE")
+            elapsed = time.time() - start_time
+            logger.info(f"  ✅ Table cleared in {elapsed:.2f} seconds")
+        else:
+            logger.info("  ✅ Table is empty, ready for import")
+        
+        # Verify table structure
+        logger.info("  🔍 Verifying table structure...")
+        cursor.execute("""
+            SELECT column_name, data_type 
+            FROM information_schema.columns 
+            WHERE table_name = 'hs_codes' 
+            ORDER BY ordinal_position
+        """)
+        columns = cursor.fetchall()
+        logger.info(f"  ✅ Table has {len(columns)} columns")
+        
+        # Check for required columns
+        required_columns = ['hs_code', 'description_en', 'level', 'category']
+        existing_columns = [col[0] for col in columns]
+        missing_columns = [col for col in required_columns if col not in existing_columns]
+        
+        if missing_columns:
+            logger.error(f"  ❌ Missing required columns: {missing_columns}")
+            sys.exit(1)
+        
+        logger.info("  ✅ Table structure verified")
+        conn.commit()
+        logger.info("✅ Table preparation completed")
+        
+    except Exception as e:
+        logger.error(f"❌ Table preparation failed: {e}")
+        conn.rollback()
+        sys.exit(1)
     
     # Process data
     batch_size = 100
@@ -488,12 +458,13 @@ def main():
     logger.info("\n🔧 Creating vector indexes for optimal search performance...")
     logger.info("   ⏳ This may take a few minutes for large datasets...")
     try:
-        # Define index creation tasks
+        # Define index creation tasks (these are the indexes removed from init.sql)
         index_tasks = [
             ("Full-text search (English)", "CREATE INDEX IF NOT EXISTS idx_hs_search_en ON hs_codes USING GIN (search_vector_en)"),
             ("Full-text search (Indonesian)", "CREATE INDEX IF NOT EXISTS idx_hs_search_id ON hs_codes USING GIN (search_vector_id)")
         ]
         
+        # Add vector indexes only if embeddings are available
         if EMBEDDINGS_AVAILABLE:
             index_tasks.extend([
                 ("Vector embedding (English)", """CREATE INDEX IF NOT EXISTS idx_hs_embedding_en ON hs_codes 
@@ -503,6 +474,8 @@ def main():
                 ("Vector embedding (Combined)", """CREATE INDEX IF NOT EXISTS idx_hs_embedding_combined ON hs_codes 
                 USING ivfflat (embedding_combined vector_cosine_ops) WITH (lists = 100)""")
             ])
+        else:
+            logger.info("   ⚠️ Skipping vector indexes - sentence-transformers not available")
         
         # Create indexes with progress bar
         for desc, sql in tqdm(index_tasks, desc="Creating indexes", unit="index"):
