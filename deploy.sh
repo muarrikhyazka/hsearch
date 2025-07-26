@@ -146,6 +146,10 @@ print_success "Existing deployment cleaned up"
 print_status "Building and starting services..."
 print_status "This may take a few minutes on first run..."
 
+# Set Docker client timeout for long builds
+export DOCKER_CLIENT_TIMEOUT=3600
+export COMPOSE_HTTP_TIMEOUT=3600
+
 if docker compose build --no-cache; then
     print_success "Services built successfully"
 else

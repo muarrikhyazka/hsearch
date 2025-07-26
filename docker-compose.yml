@@ -43,7 +43,6 @@ services:
       context: ./backend
       args:
         BUILDKIT_INLINE_CACHE: 1
-      timeout: 3600
     container_name: hs_backend
     depends_on:
       postgres:
