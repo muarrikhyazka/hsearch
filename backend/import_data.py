@@ -255,9 +255,30 @@ def main():
     # Drop and recreate table with correct structure
     logger.info("🧹 Dropping existing table and creating new structure...")
     try:
-        # Drop existing table
+        # Check if table exists and get info
+        logger.info("  🔍 Checking existing table...")
+        cursor.execute("""
+            SELECT schemaname, tablename, tableowner 
+            FROM pg_tables 
+            WHERE tablename = 'hs_codes'
+        """)
+        existing_table = cursor.fetchone()
+        
+        if existing_table:
+            logger.info(f"  📋 Found existing table: {existing_table}")
+            # Check table size
+            cursor.execute("SELECT COUNT(*) FROM hs_codes")
+            record_count = cursor.fetchone()[0]
+            logger.info(f"  📊 Existing records: {record_count:,}")
+        else:
+            logger.info("  ✅ No existing table found")
+        
+        # Drop existing table with timeout
         logger.info("  ⏳ Dropping existing table...")
+        cursor.execute("SET statement_timeout = '60s'")  # 60 second timeout
         cursor.execute("DROP TABLE IF EXISTS hs_codes CASCADE")
+        cursor.execute("RESET statement_timeout")
+        logger.info("  ✅ Table dropped successfully")
         
         # Enable pgvector extension
         logger.info("  ⏳ Enabling pgvector extension...")
@@ -310,8 +331,20 @@ def main():
         conn.commit()
         logger.info("✅ Table recreated with correct structure")
     except Exception as e:
-        logger.warning(f"⚠️ Could not recreate table: {e}")
+        logger.error(f"❌ Could not recreate table: {e}")
+        logger.info("🔄 Trying alternative approach...")
         conn.rollback()
+        
+        # Alternative: Try to truncate instead of drop
+        try:
+            logger.info("  ⏳ Trying to truncate existing table...")
+            cursor.execute("TRUNCATE TABLE hs_codes CASCADE")
+            logger.info("  ✅ Table truncated, skipping structure recreation")
+        except Exception as e2:
+            logger.error(f"❌ Truncate also failed: {e2}")
+            logger.info("💡 Please manually drop the table and try again:")
+            logger.info("   docker compose exec postgres psql -U hsearch_user -d hsearch_db -c 'DROP TABLE IF EXISTS hs_codes CASCADE;'")
+            sys.exit(1)
     
     # Process data
     batch_size = 100
