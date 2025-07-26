@@ -215,9 +215,9 @@ class SmartHSSearchEngine:
         try:
             cursor = self.db_conn.cursor(cursor_factory=RealDictCursor)
             cursor.execute("""
-                SELECT hscode, description_en, description_id, category, level, section
+                SELECT hs_code, description_en, description_id, category, level, section
                 FROM hs_codes 
-                ORDER BY hscode
+                ORDER BY hs_code
             """)
             
             self.hs_codes_cache = [dict(row) for row in cursor.fetchall()]
@@ -361,13 +361,13 @@ class SmartHSSearchEngine:
         # Remove duplicates and score
         seen_codes = set()
         for result in db_results:
-            if result['hscode'] not in seen_codes:
+            if result['hs_code'] not in seen_codes:
                 # Calculate comprehensive AI score
                 ai_score = self._calculate_ai_score(result, original_query, expanded_terms)
                 result['ai_score'] = ai_score
                 result['relevance_score'] = ai_score  # For compatibility
                 results.append(result)
-                seen_codes.add(result['hscode'])
+                seen_codes.add(result['hs_code'])
         
         # Sort by AI score
         results.sort(key=lambda x: x.get('ai_score', 0), reverse=True)
@@ -399,31 +399,31 @@ class SmartHSSearchEngine:
             
             if category == 'all':
                 sql = """
-                SELECT hscode, description_en, description_id, category, level, section
+                SELECT hs_code, description_en, description_id, category, level, section
                 FROM hs_codes 
-                WHERE description_en ILIKE %s OR hscode ILIKE %s
+                WHERE description_en ILIKE %s OR hs_code ILIKE %s
                 ORDER BY 
                     CASE 
-                        WHEN hscode ILIKE %s THEN 1
+                        WHEN hs_code ILIKE %s THEN 1
                         WHEN description_en ILIKE %s THEN 2
                         ELSE 3
                     END,
-                    hscode
+                    hs_code
                 LIMIT %s
                 """
                 params = [f'%{query}%', f'%{query}%', f'{query}%', f'{query}%', limit]
             else:
                 sql = """
-                SELECT hscode, description_en, description_id, category, level, section
+                SELECT hs_code, description_en, description_id, category, level, section
                 FROM hs_codes 
-                WHERE (description_en ILIKE %s OR hscode ILIKE %s) AND category = %s
+                WHERE (description_en ILIKE %s OR hs_code ILIKE %s) AND category = %s
                 ORDER BY 
                     CASE 
-                        WHEN hscode ILIKE %s THEN 1
+                        WHEN hs_code ILIKE %s THEN 1
                         WHEN description_en ILIKE %s THEN 2
                         ELSE 3
                     END,
-                    hscode
+                    hs_code
                 LIMIT %s
                 """
                 params = [f'%{query}%', f'%{query}%', category, f'{query}%', f'{query}%', limit]
@@ -456,36 +456,36 @@ class SmartHSSearchEngine:
             if category == 'all':
                 sql = """
                 SELECT 
-                    hscode, description_en, description_id, category, level, section,
+                    hs_code, description_en, description_id, category, level, section,
                     CASE 
-                        WHEN hscode = %s THEN 100
-                        WHEN hscode ILIKE %s THEN 90
+                        WHEN hs_code = %s THEN 100
+                        WHEN hs_code ILIKE %s THEN 90
                         WHEN description_en ILIKE %s THEN 80
                         WHEN description_en ILIKE %s THEN 70
                         WHEN description_en ILIKE %s THEN 60
                         ELSE 50
                     END as db_score
                 FROM hs_codes 
-                WHERE description_en ILIKE %s OR hscode ILIKE %s
-                ORDER BY db_score DESC, hscode
+                WHERE description_en ILIKE %s OR hs_code ILIKE %s
+                ORDER BY db_score DESC, hs_code
                 LIMIT %s
                 """
                 params = [query, f'{query}%', f'{query}%', f'%{query}%', f'%{query} %', f'%{query}%', f'%{query}%', limit]
             else:
                 sql = """
                 SELECT 
-                    hscode, description_en, description_id, category, level, section,
+                    hs_code, description_en, description_id, category, level, section,
                     CASE 
-                        WHEN hscode = %s THEN 100
-                        WHEN hscode ILIKE %s THEN 90
+                        WHEN hs_code = %s THEN 100
+                        WHEN hs_code ILIKE %s THEN 90
                         WHEN description_en ILIKE %s THEN 80
                         WHEN description_en ILIKE %s THEN 70
                         WHEN description_en ILIKE %s THEN 60
                         ELSE 50
                     END as db_score
                 FROM hs_codes 
-                WHERE (description_en ILIKE %s OR hscode ILIKE %s) AND category = %s
-                ORDER BY db_score DESC, hscode
+                WHERE (description_en ILIKE %s OR hs_code ILIKE %s) AND category = %s
+                ORDER BY db_score DESC, hs_code
                 LIMIT %s
                 """
                 params = [query, f'{query}%', f'{query}%', f'%{query}%', f'%{query} %', f'%{query}%', f'%{query}%', category, limit]
@@ -541,7 +541,7 @@ class SmartHSSearchEngine:
                 
                 # Calculate fuzzy similarity
                 desc_similarity = self.calculate_fuzzy_similarity(query, item['description_en'])
-                code_similarity = self.calculate_fuzzy_similarity(query, item['hscode'])
+                code_similarity = self.calculate_fuzzy_similarity(query, item['hs_code'])
                 
                 max_similarity = max(desc_similarity, code_similarity)
                 
@@ -575,7 +575,7 @@ class SmartHSSearchEngine:
             score += result['fuzzy_score'] * 100 * 0.2
         
         # Bonus for exact matches
-        if query.lower() in result['hscode'].lower():
+        if query.lower() in result['hs_code'].lower():
             score += 20
         
         if query.lower() in result['description_en'].lower():

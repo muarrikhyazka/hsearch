@@ -13,6 +13,10 @@ import os
 import sys
 import numpy as np
 
+# Configure logging first
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Vector embedding imports
 try:
     from sentence_transformers import SentenceTransformer
@@ -25,9 +29,6 @@ except ImportError:
 # Configuration
 DATABASE_URL = os.getenv('DATABASE_URL', "postgresql://hsearch_user:hsearch_secure_2024@localhost:5432/hsearch_db")
 DATA_FILE = "/app/data/final-dataset.csv"
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 # Initialize embedding model
 embedding_model = None
