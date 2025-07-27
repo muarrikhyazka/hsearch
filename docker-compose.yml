@@ -81,6 +81,19 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl
     restart: unless-stopped
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: hs_cloudflared
+    depends_on:
+      - nginx
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflare/config.yml:/etc/cloudflared/config.yml:ro
+      - ./cloudflare/credentials:/etc/cloudflared:ro
+    restart: unless-stopped
+    profiles:
+      - cloudflare
+
 volumes:
   postgres_data:
   redis_data:

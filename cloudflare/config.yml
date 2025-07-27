@@ -1,0 +1,29 @@
+# Cloudflare Tunnel Configuration for HSearch
+# This file will be updated with your tunnel credentials
+
+tunnel: YOUR_TUNNEL_ID
+credentials-file: /etc/cloudflared/credentials.json
+
+# Ingress rules for HSearch
+ingress:
+  # Main application
+  - hostname: hsearch.yourdomain.com
+    service: http://nginx:80
+    originRequest:
+      httpHostHeader: hsearch.yourdomain.com
+      
+  # API endpoint (optional - can access via main domain/api)
+  - hostname: api-hsearch.yourdomain.com
+    service: http://backend:5000
+    originRequest:
+      httpHostHeader: api-hsearch.yourdomain.com
+      
+  # Catch-all rule (required)
+  - service: http_status:404
+
+# Optional: HTTP/2 and other optimizations
+http2Origin: true
+noTLSVerify: false
+
+# Logging
+loglevel: info

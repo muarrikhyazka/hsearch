@@ -291,6 +291,12 @@ if [ ! -z "$LOCAL_IP" ]; then
 fi
 
 echo ""
+print_success "🌐 External Access (Optional):"
+echo "  • Setup Cloudflare Tunnel: ./setup-cloudflare.sh"
+echo "  • Start with tunnel: ./start-cloudflare.sh"
+echo "  • Documentation: CLOUDFLARE_SETUP.md"
+
+echo ""
 print_success "Useful Commands:"
 echo "  • View logs: docker compose logs -f"
 echo "  • Restart services: docker compose restart"

@@ -12,3 +12,18 @@ data/*.pdf
 
 # Duplicate/temporary data files
 data/final-dataset-utf8.csv
+
+# Cloudflare credentials (security)
+cloudflare/credentials/credentials.json
+cloudflare/credentials/*.json
+cloudflare/*.bak
+
+# Logs and data
+logs/
+postgres_data/
+redis_data/
+
+# SSL certificates
+nginx/ssl/*.key
+nginx/ssl/*.crt
+nginx/ssl/*.pem
