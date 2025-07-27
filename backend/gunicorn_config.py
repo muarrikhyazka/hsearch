@@ -6,7 +6,7 @@ bind = "0.0.0.0:5000"
 workers = 1  # Single worker for debugging
 worker_class = "sync"
 worker_connections = 1000
-timeout = 30
+timeout = 300  # 5 minutes for AI model download
 keepalive = 5
 
 # Logging
