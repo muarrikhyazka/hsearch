@@ -342,7 +342,7 @@
                 
                 const select = document.getElementById('categorySelect');
                 select.innerHTML = categories.map(cat => 
-                    `<option value="${cat.key}">${cat.name} ${cat.ai_optimized ? '🧠' : ''}</option>`
+                    `<option value="${cat.key}">${cat.name}</option>`
                 ).join('');
             } catch (error) {
                 console.error('Failed to load categories:', error);
@@ -514,66 +514,22 @@
                             <div class="desc-indonesian">
                                 <div class="desc-label">🇮🇩 Indonesian</div>
                                 <div class="desc-text">${item.description_id || item.description_en}</div>
+                                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #64748b;">
+                                    ${item.section_name_id || item.section_name || item.section ? `<div><strong>Section:</strong> ${item.section_name_id || item.section_name || item.section}</div>` : ''}
+                                    ${item.chapter_desc_id || item.chapter_desc || item.chapter ? `<div><strong>Chapter:</strong> ${item.chapter_desc_id || item.chapter_desc || item.chapter}</div>` : ''}
+                                    ${item.heading_desc_id || item.heading_desc || item.heading ? `<div><strong>Heading:</strong> ${item.heading_desc_id || item.heading_desc || item.heading}</div>` : ''}
+                                    ${item.subheading_desc_id || item.subheading_desc || item.subheading ? `<div><strong>Subheading:</strong> ${item.subheading_desc_id || item.subheading_desc || item.subheading}</div>` : ''}
+                                </div>
                             </div>
                             <div class="desc-english">
                                 <div class="desc-label">🇺🇸 English</div>
                                 <div class="desc-text">${item.description_en}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="result-hierarchy">
-                            <div class="hierarchy-title">Hierarchy Information</div>
-                            ${item.section_name || item.section_name_id || item.section ? `
-                                <div class="result-descriptions" style="margin-bottom: 8px;">
-                                    <div class="desc-indonesian" style="padding: 8px;">
-                                        <div class="desc-label" style="margin-bottom: 4px;">🇮🇩 Section</div>
-                                        <div class="desc-text" style="font-size: 0.875rem;">${item.section_name_id || item.section_name || item.section || '-'}</div>
-                                    </div>
-                                    <div class="desc-english" style="padding: 8px;">
-                                        <div class="desc-label" style="margin-bottom: 4px;">🇺🇸 Section</div>
-                                        <div class="desc-text" style="font-size: 0.875rem;">${item.section_name || item.section || '-'}</div>
-                                    </div>
+                                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #64748b;">
+                                    ${item.section_name || item.section ? `<div><strong>Section:</strong> ${item.section_name || item.section}</div>` : ''}
+                                    ${item.chapter_desc || item.chapter ? `<div><strong>Chapter:</strong> ${item.chapter_desc || item.chapter}</div>` : ''}
+                                    ${item.heading_desc || item.heading ? `<div><strong>Heading:</strong> ${item.heading_desc || item.heading}</div>` : ''}
+                                    ${item.subheading_desc || item.subheading ? `<div><strong>Subheading:</strong> ${item.subheading_desc || item.subheading}</div>` : ''}
                                 </div>
-                            ` : ''}
-                            ${item.chapter_desc || item.chapter_desc_id || item.chapter ? `
-                                <div class="result-descriptions" style="margin-bottom: 8px;">
-                                    <div class="desc-indonesian" style="padding: 8px;">
-                                        <div class="desc-label" style="margin-bottom: 4px;">🇮🇩 Chapter</div>
-                                        <div class="desc-text" style="font-size: 0.875rem;">${item.chapter_desc_id || item.chapter_desc || item.chapter || '-'}</div>
-                                    </div>
-                                    <div class="desc-english" style="padding: 8px;">
-                                        <div class="desc-label" style="margin-bottom: 4px;">🇺🇸 Chapter</div>
-                                        <div class="desc-text" style="font-size: 0.875rem;">${item.chapter_desc || item.chapter || '-'}</div>
-                                    </div>
-                                </div>
-                            ` : ''}
-                            ${item.heading_desc || item.heading_desc_id || item.heading ? `
-                                <div class="result-descriptions" style="margin-bottom: 8px;">
-                                    <div class="desc-indonesian" style="padding: 8px;">
-                                        <div class="desc-label" style="margin-bottom: 4px;">🇮🇩 Heading</div>
-                                        <div class="desc-text" style="font-size: 0.875rem;">${item.heading_desc_id || item.heading_desc || item.heading || '-'}</div>
-                                    </div>
-                                    <div class="desc-english" style="padding: 8px;">
-                                        <div class="desc-label" style="margin-bottom: 4px;">🇺🇸 Heading</div>
-                                        <div class="desc-text" style="font-size: 0.875rem;">${item.heading_desc || item.heading || '-'}</div>
-                                    </div>
-                                </div>
-                            ` : ''}
-                            ${item.subheading_desc || item.subheading_desc_id || item.subheading ? `
-                                <div class="result-descriptions" style="margin-bottom: 8px;">
-                                    <div class="desc-indonesian" style="padding: 8px;">
-                                        <div class="desc-label" style="margin-bottom: 4px;">🇮🇩 Subheading</div>
-                                        <div class="desc-text" style="font-size: 0.875rem;">${item.subheading_desc_id || item.subheading_desc || item.subheading || '-'}</div>
-                                    </div>
-                                    <div class="desc-english" style="padding: 8px;">
-                                        <div class="desc-label" style="margin-bottom: 4px;">🇺🇸 Subheading</div>
-                                        <div class="desc-text" style="font-size: 0.875rem;">${item.subheading_desc || item.subheading || '-'}</div>
-                                    </div>
-                                </div>
-                            ` : ''}
-                            <div class="hierarchy-item">
-                                <span class="hierarchy-label">Level:</span>
-                                <span class="hierarchy-value">${item.level || '-'}</span>
                             </div>
                         </div>
                 `;
