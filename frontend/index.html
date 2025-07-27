@@ -37,7 +37,7 @@
         }
         
         .search-input-wrapper { 
-            display: flex; gap: 12px; align-items: flex-start; margin-bottom: 20px;
+            display: flex; gap: 12px; align-items: flex-start; margin-bottom: 16px;
         }
         .search-input-container { position: relative; flex: 1; }
         .search-input {
@@ -72,10 +72,16 @@
             border-radius: 6px; font-size: 0.75rem; font-weight: 600;
         }
         
+        .search-bottom-row {
+            display: flex; gap: 12px; align-items: center; justify-content: space-between;
+        }
+        .search-bottom-left {
+            display: flex; gap: 12px; align-items: center; flex: 1;
+        }
         .ai-toggle-container {
-            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
-            min-width: 180px;
+            display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+            min-width: 140px;
         }
         .ai-toggle-label { 
             font-size: 0.875rem; font-weight: 500; color: #475569; 
@@ -101,15 +107,15 @@
         .controls-left { display: flex; align-items: center; gap: 16px; flex: 1; }
         
         .category-select { 
-            padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; 
-            font-size: 0.875rem; background: white; min-width: 160px;
+            padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; 
+            font-size: 0.875rem; background: white; min-width: 140px;
             transition: border-color 0.2s ease;
         }
         .category-select:focus { border-color: #3b82f6; outline: none; }
         
         .search-btn {
             background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none;
-            padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 600;
+            padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;
             font-size: 0.875rem; transition: all 0.2s ease;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
@@ -136,16 +142,59 @@
         .insight-item { margin: 3px 0; color: #555; }
         
         .result-item {
-            padding: 18px; border-left: 4px solid #667eea; margin-bottom: 15px;
-            background: #f8f9fa; border-radius: 0 10px 10px 0; transition: all 0.3s ease;
+            padding: 20px; border-left: 4px solid #667eea; margin-bottom: 16px;
+            background: #f8f9fa; border-radius: 0 12px 12px 0; transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
         }
-        .result-item:hover { transform: translateX(3px); box-shadow: 0 3px 12px rgba(0,0,0,0.1); }
+        .result-item:hover { transform: translateX(3px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
         .result-item.ai-enhanced { border-left-color: #9c27b0; background: linear-gradient(135deg, #f8f9fa, #f0f8ff); }
         
-        .result-code { font-weight: bold; font-size: 1.1rem; color: #667eea; margin-bottom: 8px; }
-        .result-desc { color: #333; margin-bottom: 8px; font-weight: 600; }
-        .result-desc-id { color: #555; margin-bottom: 8px; font-style: italic; }
-        .result-meta { color: #666; font-size: 0.85rem; margin-bottom: 8px; }
+        .result-header {
+            display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;
+        }
+        .result-code { font-weight: bold; font-size: 1.2rem; color: #667eea; }
+        .result-category { 
+            background: #e2e8f0; color: #475569; padding: 4px 8px; 
+            border-radius: 6px; font-size: 0.75rem; font-weight: 600;
+        }
+        
+        .result-descriptions {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px;
+        }
+        .desc-english, .desc-indonesian {
+            padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;
+        }
+        .desc-english { 
+            background: linear-gradient(135deg, #f8fafc, #ffffff); 
+            border-left: 3px solid #3b82f6;
+        }
+        .desc-indonesian { 
+            background: linear-gradient(135deg, #fef7ff, #ffffff); 
+            border-left: 3px solid #dc2626;
+        }
+        .desc-label {
+            font-size: 0.75rem; font-weight: 600; text-transform: uppercase; 
+            letter-spacing: 0.5px; margin-bottom: 6px;
+        }
+        .desc-english .desc-label { color: #3b82f6; }
+        .desc-indonesian .desc-label { color: #dc2626; }
+        .desc-text { font-weight: 500; color: #1e293b; line-height: 1.4; }
+        
+        .result-hierarchy {
+            background: #f1f5f9; border-radius: 8px; padding: 12px; margin-bottom: 12px;
+            border: 1px solid #cbd5e1;
+        }
+        .hierarchy-title {
+            font-size: 0.75rem; font-weight: 600; color: #475569; 
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+        }
+        .hierarchy-item {
+            display: flex; justify-content: space-between; margin-bottom: 4px;
+            font-size: 0.875rem;
+        }
+        .hierarchy-item:last-child { margin-bottom: 0; }
+        .hierarchy-label { font-weight: 500; color: #64748b; min-width: 80px; }
+        .hierarchy-value { font-weight: 600; color: #1e293b; flex: 1; text-align: right; }
         
         .result-scores {
             display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;
@@ -185,6 +234,9 @@
             <div id="statusContainer">
                 <div class="status" id="systemStatus">🔄 Connecting...</div>
                 <div class="status ai-active" id="aiStatus">🧠 AI Loading...</div>
+                <div class="ai-features" id="aiFeatures">
+                    <!-- AI features will be loaded here -->
+                </div>
             </div>
         </div>
 
@@ -195,26 +247,23 @@
                            placeholder="Search HS codes with AI... (e.g., computer, textile, animals)">
                     <div class="suggestions" id="suggestions"></div>
                 </div>
-                
-                <div class="ai-toggle-container">
-                    <span class="ai-toggle-label">AI Search</span>
-                    <div class="toggle-switch active" id="aiToggle" onclick="toggleAI()">
-                        <div class="toggle-slider"></div>
-                    </div>
-                </div>
             </div>
             
-            <div class="controls">
-                <div class="controls-left">
-                    <select class="category-select" id="categorySelect">
-                        <option value="all">🔍 All Categories</option>
-                    </select>
+            <div class="search-bottom-row">
+                <div class="search-bottom-left">
+                        <div class="ai-toggle-container">
+                            <span class="ai-toggle-label">AI Search</span>
+                            <div class="toggle-switch active" id="aiToggle" onclick="toggleAI()">
+                                <div class="toggle-slider"></div>
+                            </div>
+                        </div>
+                        
+                        <select class="category-select" id="categorySelect">
+                            <option value="all">🔍 All Categories</option>
+                        </select>
+                    </div>
                     
                     <button class="search-btn" onclick="performSearch()">Search</button>
-                </div>
-                
-                <div class="ai-features" id="aiFeatures">
-                    <!-- AI features will be loaded here -->
                 </div>
             </div>
         </div>
@@ -272,9 +321,14 @@
         function updateAIFeatures() {
             const featuresDiv = document.getElementById('aiFeatures');
             if (aiFeatures.length > 0) {
-                featuresDiv.innerHTML = aiFeatures.map(feature => 
-                    `<div class="feature-badge">${feature.replace('_', ' ')}</div>`
-                ).join('');
+                featuresDiv.innerHTML = aiFeatures.map(feature => {
+                    // Format feature names properly
+                    const formatted = feature
+                        .replace(/_/g, ' ')
+                        .replace(/\b\w/g, l => l.toUpperCase())
+                        .replace('Tfidf', 'TF-IDF');
+                    return `<div class="feature-badge">${formatted}</div>`;
+                }).join('');
             }
         }
 
@@ -435,7 +489,10 @@
                 }
                 
                 if (data.ai_features_used) {
-                    html += `<div class="insight-item">🛠️ AI features: ${data.ai_features_used.join(', ')}</div>`;
+                    const formattedFeatures = data.ai_features_used.map(feature => 
+                        feature.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()).replace('Tfidf', 'TF-IDF')
+                    );
+                    html += `<div class="insight-item">🛠️ AI features: ${formattedFeatures.join(', ')}</div>`;
                 }
                 
                 html += `</div>`;
@@ -447,14 +504,52 @@
                 
                 html += `
                     <div class="result-item ${isAIEnhanced ? 'ai-enhanced' : ''}">
-                        <div class="result-code">${item.hs_code}</div>
-                        <div class="result-desc">${item.description_en}</div>
-                        ${item.description_id && item.description_id !== item.description_en ? 
-                            `<div class="result-desc-id">ID: ${item.description_id}</div>` : ''}
-                        <div class="result-meta">
-                            Category: ${item.category || 'N/A'} | 
-                            Level: ${item.level || 'N/A'} | 
-                            Section: ${item.section || 'N/A'}
+                        <div class="result-header">
+                            <div class="result-code">${item.hs_code}</div>
+                            <div class="result-category">${item.category || 'N/A'}</div>
+                        </div>
+                        
+                        <div class="result-descriptions">
+                            <div class="desc-indonesian">
+                                <div class="desc-label">🇮🇩 Indonesian</div>
+                                <div class="desc-text">${item.description_id || item.description_en}</div>
+                            </div>
+                            <div class="desc-english">
+                                <div class="desc-label">🇺🇸 English</div>
+                                <div class="desc-text">${item.description_en}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="result-hierarchy">
+                            <div class="hierarchy-title">Hierarchy Information</div>
+                            ${item.section_name || item.section ? `
+                                <div class="hierarchy-item">
+                                    <span class="hierarchy-label">Section:</span>
+                                    <span class="hierarchy-value">${item.section_name_id || item.section_name || item.section || '-'}</span>
+                                </div>
+                            ` : ''}
+                            ${item.chapter_desc || item.chapter ? `
+                                <div class="hierarchy-item">
+                                    <span class="hierarchy-label">Chapter:</span>
+                                    <span class="hierarchy-value">${item.chapter_desc_id || item.chapter_desc || item.chapter || '-'}</span>
+                                </div>
+                            ` : ''}
+                            ${item.heading_desc || item.heading ? `
+                                <div class="hierarchy-item">
+                                    <span class="hierarchy-label">Heading:</span>
+                                    <span class="hierarchy-value">${item.heading_desc_id || item.heading_desc || item.heading || '-'}</span>
+                                </div>
+                            ` : ''}
+                            ${item.subheading_desc || item.subheading ? `
+                                <div class="hierarchy-item">
+                                    <span class="hierarchy-label">Subheading:</span>
+                                    <span class="hierarchy-value">${item.subheading_desc_id || item.subheading_desc || item.subheading || '-'}</span>
+                                </div>
+                            ` : ''}
+                            <div class="hierarchy-item">
+                                <span class="hierarchy-label">Level:</span>
+                                <span class="hierarchy-value">${item.level || '-'}</span>
+                            </div>
                         </div>
                 `;
                 
