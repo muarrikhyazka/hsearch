@@ -233,10 +233,10 @@
     <div class="container">
         <div class="header">
             <h1>HSearch</h1>
-            <p>Smart Semantic Search with Artificial Intelligence for Harmonized System Code in Indonesian 🇮🇩 and English 🇺🇸</p>
+            <p>Smart Semantic Search with Artificial Intelligence for Harmonized System Code in Indonesian and English</p>
             <div id="statusContainer">
                 <div class="status" id="systemStatus">🔄 Connecting...</div>
-                <div class="status ai-active" id="aiStatus">🧠 AI Loading...</div>
+                <div class="status ai-active" id="aiStatus">🔄 AI Loading...</div>
                 <div class="ai-features" id="aiFeatures">
                     <!-- AI features will be loaded here -->
                 </div>
@@ -348,6 +348,24 @@
                 ).join('');
             } catch (error) {
                 console.error('Failed to load categories:', error);
+                // Fallback categories in English
+                categories = [
+                    {'key': 'all', 'name': 'All Categories'},
+                    {'key': 'electronics', 'name': 'Electronics'},
+                    {'key': 'textiles', 'name': 'Textiles'},
+                    {'key': 'machinery', 'name': 'Machinery'},
+                    {'key': 'chemicals', 'name': 'Chemicals'},
+                    {'key': 'food', 'name': 'Food & Beverages'},
+                    {'key': 'transport', 'name': 'Transportation'},
+                    {'key': 'animals', 'name': 'Animals & Products'},
+                    {'key': 'plants', 'name': 'Plants & Products'},
+                    {'key': 'metals', 'name': 'Metals & Minerals'},
+                    {'key': 'others', 'name': 'Others'}
+                ];
+                const select = document.getElementById('categorySelect');
+                select.innerHTML = categories.map(cat => 
+                    `<option value="${cat.key}">${cat.name}</option>`
+                ).join('');
             }
         }
 
