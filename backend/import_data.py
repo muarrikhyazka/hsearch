@@ -253,7 +253,7 @@ def main():
         # Show data sample
         logger.info("📋 Data sample:")
         for i, (idx, row) in enumerate(df.head(3).iterrows()):
-            logger.info(f"  Row {i+1}: {row['hs_code']} - {row['description'][:60]}...")
+            logger.info(f"  Row {i+1}: {row['hs_code']} - {row['description_en'][:60]}...")
             
     except Exception as e:
         logger.error(f"❌ Failed to load data: {e}")
