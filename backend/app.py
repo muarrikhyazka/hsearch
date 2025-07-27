@@ -408,6 +408,7 @@ class SmartHSSearchEngine:
         if not self.db_conn:
             return {'error': 'Database not available', 'results': []}
             
+        start_time = time.time()
         try:
             cursor = self.db_conn.cursor(cursor_factory=RealDictCursor)
             
@@ -478,13 +479,15 @@ class SmartHSSearchEngine:
             cursor.execute(sql, params)
             results = cursor.fetchall()
             
+            execution_time = time.time() - start_time
             return {
                 'results': [dict(row) for row in results],
                 'total_count': len(results),
                 'query': query,
                 'category': category,
                 'ai_enabled': False,
-                'search_type': 'database_only'
+                'search_type': 'basic_search',
+                'execution_time': round(execution_time, 3)
             }
             
         except Exception as e:
@@ -915,6 +918,10 @@ def api_categories():
         {'key': 'metals', 'name': 'Metals & Minerals', 'ai_optimized': True},
         {'key': 'others', 'name': 'Others', 'ai_optimized': True}
     ]
+    
+    # Debug logging
+    logger.info(f"📋 Serving categories: {[cat['name'] for cat in categories]}")
+    
     return jsonify({
         'categories': categories,
         'ai_features': search_engine._get_ai_features_used()

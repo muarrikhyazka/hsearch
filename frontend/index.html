@@ -338,9 +338,12 @@
         // Load categories
         async function loadCategories() {
             try {
-                const response = await fetch(`${API_BASE}/categories`);
+                const response = await fetch(`${API_BASE}/categories?t=${Date.now()}`);
                 const data = await response.json();
                 categories = data.categories || [];
+                
+                // Debug: Log categories to see what's being loaded
+                console.log('Loaded categories:', categories);
                 
                 const select = document.getElementById('categorySelect');
                 select.innerHTML = categories.map(cat => 
