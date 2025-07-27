@@ -216,7 +216,7 @@ retry_count=0
 while [ $retry_count -lt $max_retries ]; do
     print_status "Data import attempt $((retry_count + 1))/$max_retries..."
     
-    if docker compose exec -T backend python import_data.py; then
+    if docker compose exec -T backend python /app/backend/import_data.py; then
         print_success "Fresh data imported successfully"
         
         # Verify import success by checking record count
