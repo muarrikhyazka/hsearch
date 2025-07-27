@@ -404,12 +404,24 @@ class SmartHSSearchEngine:
         }
 
     def _basic_database_search(self, query: str, category: str, limit: int) -> Dict[str, Any]:
-        """Fallback basic database search"""
+        """Fallback basic database search with improved word matching"""
         if not self.db_conn:
             return {'error': 'Database not available', 'results': []}
             
         try:
             cursor = self.db_conn.cursor(cursor_factory=RealDictCursor)
+            
+            # Create word variations for better matching
+            query_lower = query.lower().strip()
+            word_patterns = [f'%{query_lower}%']
+            
+            # Add singular/plural variations
+            if query_lower.endswith('s') and len(query_lower) > 3:
+                singular = query_lower[:-1]  # horses -> horse
+                word_patterns.append(f'%{singular}%')
+            elif not query_lower.endswith('s'):
+                plural = query_lower + 's'  # horse -> horses
+                word_patterns.append(f'%{plural}%')
             
             if category == 'all':
                 sql = """
@@ -418,6 +430,7 @@ class SmartHSSearchEngine:
                        section_name_id, chapter_desc_id, heading_desc_id, subheading_desc_id
                 FROM hs_codes 
                 WHERE description_en ILIKE %s OR description_id ILIKE %s OR hs_code ILIKE %s
+                   OR description_en ILIKE %s OR description_id ILIKE %s
                 ORDER BY 
                     CASE 
                         WHEN hs_code ILIKE %s THEN 1
@@ -427,14 +440,22 @@ class SmartHSSearchEngine:
                     hs_code
                 LIMIT %s
                 """
-                params = [f'%{query}%', f'%{query}%', f'%{query}%', f'{query}%', f'{query}%', f'{query}%', limit]
+                params = [
+                    word_patterns[0], word_patterns[0], word_patterns[0],  # Primary search
+                    word_patterns[1] if len(word_patterns) > 1 else word_patterns[0],  # Variation search
+                    word_patterns[1] if len(word_patterns) > 1 else word_patterns[0],  # Variation search
+                    f'{query_lower}%',  # Exact prefix match for ranking
+                    f'{query_lower}%', f'{query_lower}%',  # Exact prefix for ranking
+                    limit
+                ]
             else:
                 sql = """
                 SELECT hs_code, description_en, description_id, category, level, section,
                        section_name, chapter_desc, heading_desc, subheading_desc,
                        section_name_id, chapter_desc_id, heading_desc_id, subheading_desc_id
                 FROM hs_codes 
-                WHERE (description_en ILIKE %s OR description_id ILIKE %s OR hs_code ILIKE %s) AND category = %s
+                WHERE ((description_en ILIKE %s OR description_id ILIKE %s OR hs_code ILIKE %s)
+                   OR (description_en ILIKE %s OR description_id ILIKE %s)) AND category = %s
                 ORDER BY 
                     CASE 
                         WHEN hs_code ILIKE %s THEN 1
@@ -444,7 +465,15 @@ class SmartHSSearchEngine:
                     hs_code
                 LIMIT %s
                 """
-                params = [f'%{query}%', f'%{query}%', f'%{query}%', category, f'{query}%', f'{query}%', f'{query}%', limit]
+                params = [
+                    word_patterns[0], word_patterns[0], word_patterns[0],  # Primary search
+                    word_patterns[1] if len(word_patterns) > 1 else word_patterns[0],  # Variation search
+                    word_patterns[1] if len(word_patterns) > 1 else word_patterns[0],  # Variation search
+                    category,  # Category filter
+                    f'{query_lower}%',  # Exact prefix match for ranking
+                    f'{query_lower}%', f'{query_lower}%',  # Exact prefix for ranking
+                    limit
+                ]
             
             cursor.execute(sql, params)
             results = cursor.fetchall()
