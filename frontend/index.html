@@ -234,6 +234,9 @@
         <div class="header">
             <h1>HSearch</h1>
             <p>Smart Semantic Search with Artificial Intelligence for Harmonized System Code</p>
+            <p style="color: #64748b; font-size: 0.9rem; margin-top: 8px;">
+                🇮🇩 🇺🇸 in Indonesian and English
+            </p>
             <div id="statusContainer">
                 <div class="status" id="systemStatus">🔄 Connecting...</div>
                 <div class="status ai-active" id="aiStatus">🧠 AI Loading...</div>
@@ -247,7 +250,7 @@
             <div class="search-input-wrapper">
                 <div class="search-input-container">
                     <input type="text" class="search-input" id="searchInput" 
-                           placeholder="Search HS codes with AI... (e.g., computer, textile, animals)">
+                           placeholder="Search HS codes with AI in Indonesian and English (e.g., computer, komputer, textile, tekstil, animals, hewan)">
                     <div class="suggestions" id="suggestions"></div>
                 </div>
             </div>
@@ -385,7 +388,7 @@
             suggestionsDiv.innerHTML = suggestions.map(suggestion => 
                 `<div class="suggestion-item suggestion-ai" onclick="selectSuggestion('${suggestion.replace(/'/g, "\\'")}')">
                     <span class="suggestion-keyword">${suggestion}</span>
-                    ${aiEnabled ? '<span style="opacity: 0.6; font-size: 0.75rem;">🧠 AI</span>' : ''}
+                    ${aiEnabled ? '' : ''}
                 </div>`
             ).join('');
             
@@ -565,13 +568,13 @@
                 badge.textContent = 'AKTIF';
                 badge.style.background = '#9c27b0';
                 searchInput.classList.add('ai-enhanced');
-                searchInput.placeholder = 'Search with AI... (smart search, typo correction, semantic matching)';
+                searchInput.placeholder = 'Search HS codes with AI in Indonesian and English (e.g., computer, komputer, textile, tekstil, animals, hewan)';
             } else {
                 toggle.classList.remove('active');
                 badge.textContent = 'NONAKTIF';
                 badge.style.background = '#999';
                 searchInput.classList.remove('ai-enhanced');
-                searchInput.placeholder = 'Search HS Code... (basic database search)';
+                searchInput.placeholder = 'Search HS codes in Indonesian and English (e.g., computer, komputer, textile, tekstil, animals, hewan)';
             }
         }
 

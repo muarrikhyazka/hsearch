@@ -874,17 +874,17 @@ def api_suggestions():
 def api_categories():
     """Get categories with AI-enhanced info"""
     categories = [
-        {'key': 'all', 'name': 'Semua', 'ai_optimized': True},
-        {'key': 'electronics', 'name': 'Elektronik', 'ai_optimized': True},
-        {'key': 'textiles', 'name': 'Tekstil', 'ai_optimized': True},
-        {'key': 'machinery', 'name': 'Mesin', 'ai_optimized': True},
-        {'key': 'chemicals', 'name': 'Kimia', 'ai_optimized': True},
-        {'key': 'food', 'name': 'Makanan', 'ai_optimized': True},
-        {'key': 'transport', 'name': 'Transport', 'ai_optimized': True},
-        {'key': 'animals', 'name': 'Hewan', 'ai_optimized': True},
-        {'key': 'plants', 'name': 'Tanaman', 'ai_optimized': True},
-        {'key': 'metals', 'name': 'Logam', 'ai_optimized': True},
-        {'key': 'others', 'name': 'Lainnya', 'ai_optimized': True}
+        {'key': 'all', 'name': 'All Categories', 'ai_optimized': True},
+        {'key': 'electronics', 'name': 'Electronics', 'ai_optimized': True},
+        {'key': 'textiles', 'name': 'Textiles', 'ai_optimized': True},
+        {'key': 'machinery', 'name': 'Machinery', 'ai_optimized': True},
+        {'key': 'chemicals', 'name': 'Chemicals', 'ai_optimized': True},
+        {'key': 'food', 'name': 'Food & Beverages', 'ai_optimized': True},
+        {'key': 'transport', 'name': 'Transportation', 'ai_optimized': True},
+        {'key': 'animals', 'name': 'Animals & Products', 'ai_optimized': True},
+        {'key': 'plants', 'name': 'Plants & Products', 'ai_optimized': True},
+        {'key': 'metals', 'name': 'Metals & Minerals', 'ai_optimized': True},
+        {'key': 'others', 'name': 'Others', 'ai_optimized': True}
     ]
     return jsonify({
         'categories': categories,
