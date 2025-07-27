@@ -34,10 +34,15 @@ if [ ! -f "data/final-dataset-translated.csv" ]; then
     exit 1
 fi
 
-print_status "Rebuilding backend with new data..."
+print_status "Stopping backend to update code and data..."
 docker compose stop backend
+
+print_status "Rebuilding backend with updated code and data..."
+# Remove the backend image to force complete rebuild
 docker compose build --no-cache backend
-docker compose start backend
+
+print_status "Starting updated backend..."
+docker compose up -d backend
 
 print_status "Waiting for backend..."
 sleep 15
@@ -56,6 +61,20 @@ else
 fi
 
 print_status "Found import script at: $IMPORT_PATH"
+
+print_status "Checking data files in container..."
+docker compose exec -T backend ls -la /app/data/
+
+print_status "Verifying CSV structure..."
+# Check if the translated CSV exists and show its header
+if docker compose exec -T backend test -f /app/data/final-dataset-translated.csv; then
+    print_status "Translated CSV header:"
+    docker compose exec -T backend head -1 /app/data/final-dataset-translated.csv
+else
+    print_error "Translated CSV not found in container"
+    exit 1
+fi
+
 print_status "Importing Indonesian translations..."
 if docker compose exec -T backend python "$IMPORT_PATH"; then
     print_success "Import completed"
