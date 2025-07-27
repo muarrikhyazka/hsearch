@@ -95,7 +95,7 @@ print_success "Directories created and configured"
 
 # Step 4: Check Required Files
 print_status "Checking required files..."
-required_files=("docker-compose.yml" "data/final-dataset.csv" "backend/app.py" "frontend/index.html")
+required_files=("docker-compose.yml" "data/final-dataset-translated.csv" "backend/app.py" "frontend/index.html")
 
 for file in "${required_files[@]}"; do
     if [ ! -f "$file" ]; then
@@ -182,28 +182,28 @@ for container in "${containers[@]}"; do
 done
 
 # Step 8: Import Fresh Data to Database
-print_status "Importing fresh HS Code data to database..."
-print_status "This will replace any existing data with the latest dataset..."
+print_status "Importing HS Code data with Indonesian translations to database..."
+print_status "This will replace any existing data with the latest bilingual dataset..."
 
 # Verify data file exists before import
-print_status "Verifying data file exists..."
-if [ ! -f "data/final-dataset.csv" ]; then
-    print_error "Data file not found: data/final-dataset.csv"
+print_status "Verifying translated dataset exists..."
+if [ ! -f "data/final-dataset-translated.csv" ]; then
+    print_error "Translated dataset not found: data/final-dataset-translated.csv"
     exit 1
 fi
 
 # Check data file size
-data_size=$(du -h data/final-dataset.csv | cut -f1)
+data_size=$(du -h data/final-dataset-translated.csv | cut -f1)
 print_status "Data file size: $data_size"
 
 # Wait a bit more for database to be fully ready
 print_status "Waiting for database to be fully ready..."
 sleep 15
 
-# Check if backend container can access the data file
-print_status "Verifying data file access from container..."
-if ! docker compose exec -T backend ls -la /app/data/final-dataset.csv; then
-    print_error "Data file not accessible from backend container"
+# Check if backend container can access the translated data file
+print_status "Verifying translated dataset access from container..."
+if ! docker compose exec -T backend ls -la /app/data/final-dataset-translated.csv; then
+    print_error "Translated dataset not accessible from backend container"
     print_status "Checking volume mounts..."
     docker compose exec -T backend ls -la /app/data/ || print_error "Data directory not mounted"
     exit 1
