@@ -234,12 +234,14 @@ class SmartHSSearchEngine:
             return
             
         try:
-            # Prepare text corpus
+            # Prepare text corpus with bilingual support
             texts = []
             for item in self.hs_codes_cache:
-                # Combine description and keywords for better matching
+                # Combine English and Indonesian descriptions for better matching
                 text_parts = [item['description_en']]
-                if item.get('description_id'):
+                
+                # Add Indonesian description if available
+                if item.get('description_id') and item['description_id'].strip():
                     text_parts.append(item['description_id'])
                 
                 # Add synonyms for better semantic matching
@@ -247,6 +249,16 @@ class SmartHSSearchEngine:
                 for word in description_words:
                     if word in self.synonym_dict:
                         text_parts.extend(self.synonym_dict[word])
+                
+                # Also process Indonesian description words
+                if item.get('description_id') and item['description_id'].strip():
+                    id_words = item['description_id'].lower().split()
+                    for word in id_words:
+                        # Reverse lookup - if Indonesian word maps to English synonym
+                        for en_key, id_synonyms in self.synonym_dict.items():
+                            if word in [s.lower() for s in id_synonyms]:
+                                text_parts.append(en_key)
+                                break
                 
                 texts.append(' '.join(text_parts))
             
@@ -405,34 +417,34 @@ class SmartHSSearchEngine:
                        section_name, chapter_desc, heading_desc, subheading_desc,
                        section_name_id, chapter_desc_id, heading_desc_id, subheading_desc_id
                 FROM hs_codes 
-                WHERE description_en ILIKE %s OR hs_code ILIKE %s
+                WHERE description_en ILIKE %s OR description_id ILIKE %s OR hs_code ILIKE %s
                 ORDER BY 
                     CASE 
                         WHEN hs_code ILIKE %s THEN 1
-                        WHEN description_en ILIKE %s THEN 2
+                        WHEN description_en ILIKE %s OR description_id ILIKE %s THEN 2
                         ELSE 3
                     END,
                     hs_code
                 LIMIT %s
                 """
-                params = [f'%{query}%', f'%{query}%', f'{query}%', f'{query}%', limit]
+                params = [f'%{query}%', f'%{query}%', f'%{query}%', f'{query}%', f'{query}%', f'{query}%', limit]
             else:
                 sql = """
                 SELECT hs_code, description_en, description_id, category, level, section,
                        section_name, chapter_desc, heading_desc, subheading_desc,
                        section_name_id, chapter_desc_id, heading_desc_id, subheading_desc_id
                 FROM hs_codes 
-                WHERE (description_en ILIKE %s OR hs_code ILIKE %s) AND category = %s
+                WHERE (description_en ILIKE %s OR description_id ILIKE %s OR hs_code ILIKE %s) AND category = %s
                 ORDER BY 
                     CASE 
                         WHEN hs_code ILIKE %s THEN 1
-                        WHEN description_en ILIKE %s THEN 2
+                        WHEN description_en ILIKE %s OR description_id ILIKE %s THEN 2
                         ELSE 3
                     END,
                     hs_code
                 LIMIT %s
                 """
-                params = [f'%{query}%', f'%{query}%', category, f'{query}%', f'{query}%', limit]
+                params = [f'%{query}%', f'%{query}%', f'%{query}%', category, f'{query}%', f'{query}%', f'{query}%', limit]
             
             cursor.execute(sql, params)
             results = cursor.fetchall()
@@ -468,17 +480,17 @@ class SmartHSSearchEngine:
                     CASE 
                         WHEN hs_code = %s THEN 100
                         WHEN hs_code ILIKE %s THEN 90
-                        WHEN description_en ILIKE %s THEN 80
-                        WHEN description_en ILIKE %s THEN 70
-                        WHEN description_en ILIKE %s THEN 60
+                        WHEN description_en ILIKE %s OR description_id ILIKE %s THEN 80
+                        WHEN description_en ILIKE %s OR description_id ILIKE %s THEN 70
+                        WHEN description_en ILIKE %s OR description_id ILIKE %s THEN 60
                         ELSE 50
                     END as db_score
                 FROM hs_codes 
-                WHERE description_en ILIKE %s OR hs_code ILIKE %s
+                WHERE description_en ILIKE %s OR description_id ILIKE %s OR hs_code ILIKE %s
                 ORDER BY db_score DESC, hs_code
                 LIMIT %s
                 """
-                params = [query, f'{query}%', f'{query}%', f'%{query}%', f'%{query} %', f'%{query}%', f'%{query}%', limit]
+                params = [query, f'{query}%', f'{query}%', f'{query}%', f'%{query}%', f'%{query}%', f'%{query} %', f'%{query} %', f'%{query}%', f'%{query}%', f'%{query}%', limit]
             else:
                 sql = """
                 SELECT 
@@ -488,17 +500,17 @@ class SmartHSSearchEngine:
                     CASE 
                         WHEN hs_code = %s THEN 100
                         WHEN hs_code ILIKE %s THEN 90
-                        WHEN description_en ILIKE %s THEN 80
-                        WHEN description_en ILIKE %s THEN 70
-                        WHEN description_en ILIKE %s THEN 60
+                        WHEN description_en ILIKE %s OR description_id ILIKE %s THEN 80
+                        WHEN description_en ILIKE %s OR description_id ILIKE %s THEN 70
+                        WHEN description_en ILIKE %s OR description_id ILIKE %s THEN 60
                         ELSE 50
                     END as db_score
                 FROM hs_codes 
-                WHERE (description_en ILIKE %s OR hs_code ILIKE %s) AND category = %s
+                WHERE (description_en ILIKE %s OR description_id ILIKE %s OR hs_code ILIKE %s) AND category = %s
                 ORDER BY db_score DESC, hs_code
                 LIMIT %s
                 """
-                params = [query, f'{query}%', f'{query}%', f'%{query}%', f'%{query} %', f'%{query}%', f'%{query}%', category, limit]
+                params = [query, f'{query}%', f'{query}%', f'{query}%', f'%{query}%', f'%{query}%', f'%{query} %', f'%{query} %', f'%{query}%', f'%{query}%', f'%{query}%', category, limit]
             
             cursor.execute(sql, params)
             results = cursor.fetchall()
@@ -549,11 +561,16 @@ class SmartHSSearchEngine:
                 if category != 'all' and item.get('category') != category:
                     continue
                 
-                # Calculate fuzzy similarity
-                desc_similarity = self.calculate_fuzzy_similarity(query, item['description_en'])
+                # Calculate fuzzy similarity for both languages
+                desc_en_similarity = self.calculate_fuzzy_similarity(query, item['description_en'])
                 code_similarity = self.calculate_fuzzy_similarity(query, item['hs_code'])
                 
-                max_similarity = max(desc_similarity, code_similarity)
+                # Include Indonesian description similarity
+                desc_id_similarity = 0.0
+                if item.get('description_id') and item['description_id'].strip():
+                    desc_id_similarity = self.calculate_fuzzy_similarity(query, item['description_id'])
+                
+                max_similarity = max(desc_en_similarity, desc_id_similarity, code_similarity)
                 
                 if max_similarity > 0.6:  # Fuzzy threshold
                     item_copy = item.copy()
@@ -590,11 +607,19 @@ class SmartHSSearchEngine:
         
         if query.lower() in result['description_en'].lower():
             score += 15
+            
+        # Bonus for Indonesian description matches
+        if result.get('description_id') and result['description_id'].strip():
+            if query.lower() in result['description_id'].lower():
+                score += 15
         
-        # Bonus for expanded term matches
+        # Bonus for expanded term matches in both languages
         for term in expanded_terms:
             if term.lower() in result['description_en'].lower():
                 score += 5
+            if result.get('description_id') and result['description_id'].strip():
+                if term.lower() in result['description_id'].lower():
+                    score += 5
         
         return round(score, 2)
 
