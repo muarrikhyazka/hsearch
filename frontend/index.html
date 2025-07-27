@@ -422,7 +422,11 @@
 
         // Hide suggestions
         function hideSuggestions() {
-            document.getElementById('suggestions').style.display = 'none';
+            const suggestionsDiv = document.getElementById('suggestions');
+            if (suggestionsDiv) {
+                suggestionsDiv.style.display = 'none';
+                suggestionsDiv.innerHTML = '';  // Clear suggestions content
+            }
         }
 
         // Perform AI search
@@ -619,6 +623,15 @@
             if (e.key === 'Enter') {
                 hideSuggestions();
                 performSearch();
+            }
+        });
+
+        // Additional handler for keydown to ensure suggestions are hidden
+        document.getElementById('searchInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                hideSuggestions();
+                // Force hide suggestions after a small delay to handle any timing issues
+                setTimeout(hideSuggestions, 100);
             }
         });
 
