@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HS Code AI Search - Smart Search System</title>
+    <title>HSearch - Smart Semantic Search System</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -74,6 +74,7 @@
         
         .search-bottom-row {
             display: flex; gap: 12px; align-items: center; justify-content: space-between;
+            height: 40px;
         }
         .search-bottom-left {
             display: flex; gap: 12px; align-items: center; flex: 1;
@@ -81,7 +82,7 @@
         .ai-toggle-container {
             display: flex; align-items: center; gap: 8px; padding: 8px 12px;
             background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
-            min-width: 140px;
+            min-width: 140px; height: 40px;
         }
         .ai-toggle-label { 
             font-size: 0.875rem; font-weight: 500; color: #475569; 
@@ -109,7 +110,7 @@
         .category-select { 
             padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; 
             font-size: 0.875rem; background: white; min-width: 140px;
-            transition: border-color 0.2s ease;
+            transition: border-color 0.2s ease; height: 40px;
         }
         .category-select:focus { border-color: #3b82f6; outline: none; }
         
@@ -117,7 +118,7 @@
             background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none;
             padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;
             font-size: 0.875rem; transition: all 0.2s ease;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); height: 40px;
         }
         .search-btn:hover { 
             transform: translateY(-1px); 
@@ -131,7 +132,7 @@
             border: 1px solid rgba(34, 197, 94, 0.2);
         }
         
-        .results { background: white; border-radius: 12px; padding: 18px; margin-top: 20px; display: none; }
+        .results { background: white; border-radius: 12px; padding: 18px; margin-top: 20px; display: none; max-width: 1000px; margin-left: auto; margin-right: auto; }
         .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; }
         
         .ai-insights {
@@ -229,8 +230,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🧠 HS Code AI Search</h1>
-            <p>Smart semantic search dengan teknologi AI</p>
+            <h1>HSearch</h1>
+            <p>Smart Semantic Search with Artificial Intelligence for Harmonized System Code</p>
             <div id="statusContainer">
                 <div class="status" id="systemStatus">🔄 Connecting...</div>
                 <div class="status ai-active" id="aiStatus">🧠 AI Loading...</div>
@@ -259,7 +260,7 @@
                         </div>
                         
                         <select class="category-select" id="categorySelect">
-                            <option value="all">🔍 All Categories</option>
+                            <option value="all">All Categories</option>
                         </select>
                     </div>
                     
@@ -295,7 +296,7 @@
                 
                 // Update AI status
                 if (aiData.ai_available) {
-                    document.getElementById('aiStatus').innerHTML = '🧠 AI Ready';
+                    document.getElementById('aiStatus').innerHTML = '🤖 AI Ready';
                     document.getElementById('aiStatus').className = 'status ai-active';
                     aiFeatures = aiData.features || [];
                     updateAIFeatures();
@@ -407,7 +408,7 @@
             const category = document.getElementById('categorySelect').value;
             
             if (!query) {
-                alert('Masukkan kata kunci pencarian');
+                alert('Please enter search keywords');
                 return;
             }
 
@@ -417,7 +418,7 @@
             resultsDiv.innerHTML = `
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>${aiEnabled ? '🧠 AI Processing...' : '🔍 Searching...'}</p>
+                    <p>${aiEnabled ? '🤖 AI Processing...' : '🔍 Searching...'}</p>
                 </div>
             `;
 
@@ -466,7 +467,7 @@
                 <div class="results-header">
                     <h3>Found ${data.results.length} results</h3>
                     <div style="font-size: 0.9rem; color: #666;">
-                        ${data.execution_time}s | ${data.search_type}
+                        ${data.execution_time}s | ${data.search_type.replace('ai_powered', 'AI Powered')}
                     </div>
                 </div>
             `;
@@ -474,7 +475,7 @@
             // AI insights
             if (data.ai_enabled && (data.corrected_query || data.expanded_terms || data.typo_suggestions)) {
                 html += `<div class="ai-insights">
-                    <h4>🧠 AI Insights</h4>`;
+                    <h4>🤖 AI Insights</h4>`;
                 
                 if (data.corrected_query && data.corrected_query !== data.query) {
                     html += `<div class="insight-item">✅ Query corrected: "${data.query}" → "${data.corrected_query}"</div>`;
@@ -522,28 +523,52 @@
                         
                         <div class="result-hierarchy">
                             <div class="hierarchy-title">Hierarchy Information</div>
-                            ${item.section_name || item.section ? `
-                                <div class="hierarchy-item">
-                                    <span class="hierarchy-label">Section:</span>
-                                    <span class="hierarchy-value">${item.section_name_id || item.section_name || item.section || '-'}</span>
+                            ${item.section_name || item.section_name_id || item.section ? `
+                                <div class="result-descriptions" style="margin-bottom: 8px;">
+                                    <div class="desc-indonesian" style="padding: 8px;">
+                                        <div class="desc-label" style="margin-bottom: 4px;">🇮🇩 Section</div>
+                                        <div class="desc-text" style="font-size: 0.875rem;">${item.section_name_id || item.section_name || item.section || '-'}</div>
+                                    </div>
+                                    <div class="desc-english" style="padding: 8px;">
+                                        <div class="desc-label" style="margin-bottom: 4px;">🇺🇸 Section</div>
+                                        <div class="desc-text" style="font-size: 0.875rem;">${item.section_name || item.section || '-'}</div>
+                                    </div>
                                 </div>
                             ` : ''}
-                            ${item.chapter_desc || item.chapter ? `
-                                <div class="hierarchy-item">
-                                    <span class="hierarchy-label">Chapter:</span>
-                                    <span class="hierarchy-value">${item.chapter_desc_id || item.chapter_desc || item.chapter || '-'}</span>
+                            ${item.chapter_desc || item.chapter_desc_id || item.chapter ? `
+                                <div class="result-descriptions" style="margin-bottom: 8px;">
+                                    <div class="desc-indonesian" style="padding: 8px;">
+                                        <div class="desc-label" style="margin-bottom: 4px;">🇮🇩 Chapter</div>
+                                        <div class="desc-text" style="font-size: 0.875rem;">${item.chapter_desc_id || item.chapter_desc || item.chapter || '-'}</div>
+                                    </div>
+                                    <div class="desc-english" style="padding: 8px;">
+                                        <div class="desc-label" style="margin-bottom: 4px;">🇺🇸 Chapter</div>
+                                        <div class="desc-text" style="font-size: 0.875rem;">${item.chapter_desc || item.chapter || '-'}</div>
+                                    </div>
                                 </div>
                             ` : ''}
-                            ${item.heading_desc || item.heading ? `
-                                <div class="hierarchy-item">
-                                    <span class="hierarchy-label">Heading:</span>
-                                    <span class="hierarchy-value">${item.heading_desc_id || item.heading_desc || item.heading || '-'}</span>
+                            ${item.heading_desc || item.heading_desc_id || item.heading ? `
+                                <div class="result-descriptions" style="margin-bottom: 8px;">
+                                    <div class="desc-indonesian" style="padding: 8px;">
+                                        <div class="desc-label" style="margin-bottom: 4px;">🇮🇩 Heading</div>
+                                        <div class="desc-text" style="font-size: 0.875rem;">${item.heading_desc_id || item.heading_desc || item.heading || '-'}</div>
+                                    </div>
+                                    <div class="desc-english" style="padding: 8px;">
+                                        <div class="desc-label" style="margin-bottom: 4px;">🇺🇸 Heading</div>
+                                        <div class="desc-text" style="font-size: 0.875rem;">${item.heading_desc || item.heading || '-'}</div>
+                                    </div>
                                 </div>
                             ` : ''}
-                            ${item.subheading_desc || item.subheading ? `
-                                <div class="hierarchy-item">
-                                    <span class="hierarchy-label">Subheading:</span>
-                                    <span class="hierarchy-value">${item.subheading_desc_id || item.subheading_desc || item.subheading || '-'}</span>
+                            ${item.subheading_desc || item.subheading_desc_id || item.subheading ? `
+                                <div class="result-descriptions" style="margin-bottom: 8px;">
+                                    <div class="desc-indonesian" style="padding: 8px;">
+                                        <div class="desc-label" style="margin-bottom: 4px;">🇮🇩 Subheading</div>
+                                        <div class="desc-text" style="font-size: 0.875rem;">${item.subheading_desc_id || item.subheading_desc || item.subheading || '-'}</div>
+                                    </div>
+                                    <div class="desc-english" style="padding: 8px;">
+                                        <div class="desc-label" style="margin-bottom: 4px;">🇺🇸 Subheading</div>
+                                        <div class="desc-text" style="font-size: 0.875rem;">${item.subheading_desc || item.subheading || '-'}</div>
+                                    </div>
                                 </div>
                             ` : ''}
                             <div class="hierarchy-item">
@@ -582,13 +607,13 @@
                 badge.textContent = 'AKTIF';
                 badge.style.background = '#9c27b0';
                 searchInput.classList.add('ai-enhanced');
-                searchInput.placeholder = 'Cari dengan AI... (smart search, typo correction, semantic matching)';
+                searchInput.placeholder = 'Search with AI... (smart search, typo correction, semantic matching)';
             } else {
                 toggle.classList.remove('active');
                 badge.textContent = 'NONAKTIF';
                 badge.style.background = '#999';
                 searchInput.classList.remove('ai-enhanced');
-                searchInput.placeholder = 'Cari HS Code... (basic database search)';
+                searchInput.placeholder = 'Search HS Code... (basic database search)';
             }
         }
 
