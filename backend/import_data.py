@@ -29,7 +29,7 @@ except ImportError:
 
 # Configuration
 DATABASE_URL = os.getenv('DATABASE_URL', "postgresql://hsearch_user:hsearch_secure_2024@localhost:5432/hsearch_db")
-DATA_FILE = "/app/data/final-dataset.csv"
+DATA_FILE = "/app/data/final-dataset-translated.csv"
 
 # Initialize embedding model
 embedding_model = None
@@ -160,10 +160,10 @@ def categorize_hs_code(description):
 def validate_and_clean_data(row):
     """Validate and clean row data for new structure"""
     try:
-        # Extract data from new CSV structure
+        # Extract data from new CSV structure  
         no = int(row['no']) if pd.notna(row['no']) else None
         hs_code = str(row['hs_code']).strip() if pd.notna(row['hs_code']) else ''
-        description = str(row['description']).strip() if pd.notna(row['description']) else ''
+        description = str(row['description_en']).strip() if pd.notna(row['description_en']) else ''
         section = str(row['section']).strip() if pd.notna(row['section']) else ''
         chapter = str(row['chapter']).strip() if pd.notna(row['chapter']) else ''
         heading = str(row['heading']).strip() if pd.notna(row['heading']) else ''
@@ -172,6 +172,12 @@ def validate_and_clean_data(row):
         heading_desc = str(row['heading_desc_en']).strip() if pd.notna(row['heading_desc_en']) else ''
         subheading_desc = str(row['subheading_desc_en']).strip() if pd.notna(row['subheading_desc_en']) else ''
         section_name = str(row['section_name_en']).strip() if pd.notna(row['section_name_en']) else ''
+        
+        # Extract Indonesian descriptions
+        chapter_desc_id = str(row['chapter_desc_id']).strip() if pd.notna(row['chapter_desc_id']) else ''
+        heading_desc_id = str(row['heading_desc_id']).strip() if pd.notna(row['heading_desc_id']) else ''
+        subheading_desc_id = str(row['subheading_desc_id']).strip() if pd.notna(row['subheading_desc_id']) else ''
+        section_name_id = str(row['section_name_id']).strip() if pd.notna(row['section_name_id']) else ''
         
         # Validate required fields
         if not hs_code or hs_code == 'nan':
@@ -191,10 +197,14 @@ def validate_and_clean_data(row):
         if not subheading or subheading == '':
             level = 4 if heading and heading != '' else 2 if chapter and chapter != '' else 1
         
+        # Extract Indonesian main description
+        description_id = str(row['description_id']).strip() if pd.notna(row['description_id']) else ''
+        
         return {
             'no': no,
             'hs_code': hs_code,
             'description_en': description,
+            'description_id': description_id,
             'section': section,
             'chapter': chapter,
             'heading': heading,
@@ -203,6 +213,10 @@ def validate_and_clean_data(row):
             'heading_desc': heading_desc,
             'subheading_desc': subheading_desc,
             'section_name': section_name,
+            'chapter_desc_id': chapter_desc_id,
+            'heading_desc_id': heading_desc_id,
+            'subheading_desc_id': subheading_desc_id,
+            'section_name_id': section_name_id,
             'level': level,
             'category': category
         }, None
@@ -227,7 +241,9 @@ def main():
         logger.info(f"📊 Columns: {list(df.columns)}")
         
         # Verify expected columns for new structure
-        expected_columns = ['no', 'hs_code', 'description', 'section', 'chapter', 'heading', 'subheading', 'section_name_en', 'chapter_desc_en', 'heading_desc_en', 'subheading_desc_en']
+        expected_columns = ['no', 'hs_code', 'description_en', 'description_id', 'section', 'chapter', 'heading', 'subheading', 
+                           'section_name_en', 'chapter_desc_en', 'heading_desc_en', 'subheading_desc_en',
+                           'section_name_id', 'chapter_desc_id', 'heading_desc_id', 'subheading_desc_id']
         missing_columns = [col for col in expected_columns if col not in df.columns]
         if missing_columns:
             logger.error(f"❌ Missing expected columns: {missing_columns}")
@@ -325,23 +341,21 @@ def main():
     
     logger.info(f"📊 Processing {total_records} records in batches of {batch_size}...")
     
-    # Create progress bar for batches
-    batch_progress = tqdm(range(0, total_records, batch_size), desc="Processing batches", unit="batch")
+    # Create single progress bar for all records
+    total_progress = tqdm(total=total_records, desc="Processing records", unit="record")
     
-    for i in batch_progress:
+    for i in range(0, total_records, batch_size):
         batch_end = min(i + batch_size, total_records)
         batch_df = df[i:batch_end].copy()
         
-        logger.info(f"📦 Processing batch {i//batch_size + 1}/{(total_records-1)//batch_size + 1} (records {i+1}-{batch_end})")
+        batch_num = i//batch_size + 1
+        total_batches = (total_records-1)//batch_size + 1
+        logger.info(f"📦 Processing batch {batch_num}/{total_batches} (records {i+1}-{batch_end})")
         
         batch_processed = 0
         batch_errors = 0
         
-        # Create progress bar for records in current batch
-        record_progress = tqdm(batch_df.iterrows(), desc=f"Batch {i//batch_size + 1} records", 
-                              total=len(batch_df), unit="record", leave=False)
-        
-        for idx, row in record_progress:
+        for idx, row in batch_df.iterrows():
             hscode = "UNKNOWN"
             
             try:
@@ -358,7 +372,7 @@ def main():
                 
                 # Generate embeddings for vector search
                 description_en = data['description_en']
-                description_id = data.get('description_id', '')
+                description_id = data['description_id']  # Indonesian description from CSV
                 
                 # Create combined text for embedding
                 combined_text = description_en
@@ -371,10 +385,11 @@ def main():
                 sql = """
                 INSERT INTO hs_codes 
                 (no, hs_code, description_en, description_id, section, chapter, heading, subheading,
-                 chapter_desc, heading_desc, subheading_desc, section_name, level, category, 
-                 embedding_en, embedding_id, embedding_combined,
+                 chapter_desc, heading_desc, subheading_desc, section_name, 
+                 chapter_desc_id, heading_desc_id, subheading_desc_id, section_name_id,
+                 level, category, embedding_en, embedding_id, embedding_combined,
                  search_vector_en, search_vector_id, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         to_tsvector('english', %s), to_tsvector('simple', %s), NOW(), NOW())
                 ON CONFLICT (hs_code) DO UPDATE SET
                     no = EXCLUDED.no,
@@ -388,6 +403,10 @@ def main():
                     heading_desc = EXCLUDED.heading_desc,
                     subheading_desc = EXCLUDED.subheading_desc,
                     section_name = EXCLUDED.section_name,
+                    chapter_desc_id = EXCLUDED.chapter_desc_id,
+                    heading_desc_id = EXCLUDED.heading_desc_id,
+                    subheading_desc_id = EXCLUDED.subheading_desc_id,
+                    section_name_id = EXCLUDED.section_name_id,
                     level = EXCLUDED.level,
                     category = EXCLUDED.category,
                     embedding_en = EXCLUDED.embedding_en,
@@ -411,6 +430,10 @@ def main():
                     data['heading_desc'],
                     data['subheading_desc'],
                     data['section_name'],
+                    data['chapter_desc_id'],  # Indonesian chapter description
+                    data['heading_desc_id'],  # Indonesian heading description
+                    data['subheading_desc_id'],  # Indonesian subheading description
+                    data['section_name_id'],  # Indonesian section name
                     data['level'],
                     data['category'],
                     emb_en,  # English embedding vector
@@ -422,8 +445,9 @@ def main():
                 
                 batch_processed += 1
                 
-                # Update progress bar description with current HS code
-                record_progress.set_postfix({"HS Code": hs_code, "Processed": batch_processed, "Errors": batch_errors})
+                # Update main progress bar
+                total_progress.update(1)
+                total_progress.set_postfix({"Batch": f"{batch_num}/{total_batches}", "HS Code": hs_code})
                 
             except psycopg2.Error as e:
                 logger.error(f"❌ Database error for {hs_code}: {e}")
@@ -433,7 +457,7 @@ def main():
             except Exception as e:
                 logger.error(f"❌ Processing error for {hs_code}: {e}")
                 batch_errors += 1
-                record_progress.set_postfix({"HS Code": hs_code, "Processed": batch_processed, "Errors": batch_errors})
+                total_progress.update(1)
                 continue
         
         # Commit batch
@@ -443,16 +467,16 @@ def main():
             error_count += batch_errors
             
             if batch_processed > 0:
-                logger.info(f"✅ Batch completed: {batch_processed} processed, {batch_errors} errors")
+                logger.info(f"✅ Batch {batch_num} completed: {batch_processed} processed, {batch_errors} errors")
             else:
-                logger.warning(f"⚠️ Batch completed: 0 processed, {batch_errors} errors")
-            
-            # Update main progress bar
-            batch_progress.set_postfix({"Total Processed": processed_count, "Total Errors": error_count})
+                logger.warning(f"⚠️ Batch {batch_num} completed: 0 processed, {batch_errors} errors")
                 
         except Exception as e:
             logger.error(f"❌ Failed to commit batch: {e}")
             conn.rollback()
+    
+    # Close progress bar
+    total_progress.close()
     
     # Create vector indexes after data import (much faster with data present)
     logger.info("\n🔧 Creating vector indexes for optimal search performance...")

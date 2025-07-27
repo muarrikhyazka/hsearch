@@ -21,6 +21,10 @@ CREATE TABLE hs_codes (
     heading_desc TEXT,
     subheading_desc TEXT,
     section_name TEXT,
+    chapter_desc_id TEXT,
+    heading_desc_id TEXT,
+    subheading_desc_id TEXT,
+    section_name_id TEXT,
     level INTEGER NOT NULL,
     
     -- Auto-categorization
