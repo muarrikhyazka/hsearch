@@ -236,9 +236,21 @@ def main():
     # Load local data file
     logger.info("📥 Loading HS code data...")
     try:
-        df = pd.read_csv(DATA_FILE)
+        # Force code columns to be read as strings to preserve leading zeros
+        dtype_dict = {
+            'hs_code': str,
+            'section': str, 
+            'chapter': str,
+            'heading': str,
+            'subheading': str
+        }
+        df = pd.read_csv(DATA_FILE, dtype=dtype_dict)
         logger.info(f"✅ Loaded {len(df)} records")
         logger.info(f"📊 Columns: {list(df.columns)}")
+        
+        # Log sample data to verify leading zeros are preserved
+        sample_codes = df[['hs_code', 'chapter', 'heading', 'subheading']].head(3)
+        logger.info(f"📋 Sample codes (checking leading zeros):\n{sample_codes}")
         
         # Verify expected columns for new structure
         expected_columns = ['no', 'hs_code', 'description_en', 'description_id', 'section', 'chapter', 'heading', 'subheading', 
