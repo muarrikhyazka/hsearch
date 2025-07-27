@@ -663,11 +663,11 @@ class SmartHSSearchEngine:
             SELECT hs_code, description_en, description_id, category, level, section,
                    section_name, chapter_desc, heading_desc, subheading_desc,
                    section_name_id, chapter_desc_id, heading_desc_id, subheading_desc_id,
-                   1 - (embedding_combined <=> %s) as similarity_score
+                   1 - (embedding_combined <=> %s::vector) as similarity_score
             FROM hs_codes 
             WHERE embedding_combined IS NOT NULL
             {category_filter}
-            ORDER BY embedding_combined <=> %s
+            ORDER BY embedding_combined <=> %s::vector
             LIMIT %s
             """
             
