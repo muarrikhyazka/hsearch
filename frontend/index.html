@@ -284,10 +284,14 @@
         // Check system and AI status
         async function checkStatus() {
             try {
+                console.log('Checking status at:', API_BASE);
                 const [healthResponse, aiResponse] = await Promise.all([
                     fetch(`${API_BASE}/health`),
                     fetch(`${API_BASE}/ai-status`)
                 ]);
+                
+                console.log('Health response:', healthResponse.status);
+                console.log('AI response:', aiResponse.status);
                 
                 const healthData = await healthResponse.json();
                 const aiData = await aiResponse.json();
