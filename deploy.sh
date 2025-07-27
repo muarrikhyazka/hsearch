@@ -24,7 +24,7 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "Deployment cancelled. Use ./deploy-app.sh for app-only deployment."
     exit 0
 fi
-echo """
+echo ""
 
 # Colors for output
 RED='\033[0;31m'
