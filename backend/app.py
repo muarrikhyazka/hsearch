@@ -215,7 +215,9 @@ class SmartHSSearchEngine:
         try:
             cursor = self.db_conn.cursor(cursor_factory=RealDictCursor)
             cursor.execute("""
-                SELECT hs_code, description_en, description_id, category, level, section
+                SELECT hs_code, description_en, description_id, category, level, section,
+                       section_name, chapter_desc, heading_desc, subheading_desc,
+                       section_name_id, chapter_desc_id, heading_desc_id, subheading_desc_id
                 FROM hs_codes 
                 ORDER BY hs_code
             """)
@@ -399,7 +401,9 @@ class SmartHSSearchEngine:
             
             if category == 'all':
                 sql = """
-                SELECT hs_code, description_en, description_id, category, level, section
+                SELECT hs_code, description_en, description_id, category, level, section,
+                       section_name, chapter_desc, heading_desc, subheading_desc,
+                       section_name_id, chapter_desc_id, heading_desc_id, subheading_desc_id
                 FROM hs_codes 
                 WHERE description_en ILIKE %s OR hs_code ILIKE %s
                 ORDER BY 
@@ -414,7 +418,9 @@ class SmartHSSearchEngine:
                 params = [f'%{query}%', f'%{query}%', f'{query}%', f'{query}%', limit]
             else:
                 sql = """
-                SELECT hs_code, description_en, description_id, category, level, section
+                SELECT hs_code, description_en, description_id, category, level, section,
+                       section_name, chapter_desc, heading_desc, subheading_desc,
+                       section_name_id, chapter_desc_id, heading_desc_id, subheading_desc_id
                 FROM hs_codes 
                 WHERE (description_en ILIKE %s OR hs_code ILIKE %s) AND category = %s
                 ORDER BY 
@@ -457,6 +463,8 @@ class SmartHSSearchEngine:
                 sql = """
                 SELECT 
                     hs_code, description_en, description_id, category, level, section,
+                    section_name, chapter_desc, heading_desc, subheading_desc,
+                    section_name_id, chapter_desc_id, heading_desc_id, subheading_desc_id,
                     CASE 
                         WHEN hs_code = %s THEN 100
                         WHEN hs_code ILIKE %s THEN 90
@@ -475,6 +483,8 @@ class SmartHSSearchEngine:
                 sql = """
                 SELECT 
                     hs_code, description_en, description_id, category, level, section,
+                    section_name, chapter_desc, heading_desc, subheading_desc,
+                    section_name_id, chapter_desc_id, heading_desc_id, subheading_desc_id,
                     CASE 
                         WHEN hs_code = %s THEN 100
                         WHEN hs_code ILIKE %s THEN 90
@@ -626,7 +636,8 @@ class SmartHSSearchEngine:
             # Vector similarity search using cosine distance
             sql = f"""
             SELECT hs_code, description_en, description_id, category, level, section,
-                   chapter_desc, heading_desc, subheading_desc, section_name,
+                   section_name, chapter_desc, heading_desc, subheading_desc,
+                   section_name_id, chapter_desc_id, heading_desc_id, subheading_desc_id,
                    1 - (embedding_combined <=> %s) as similarity_score
             FROM hs_codes 
             WHERE embedding_combined IS NOT NULL
