@@ -1,12 +1,30 @@
 #!/bin/bash
 
-# HSSearch Auto Deployment Script for Mini PC Home Server
+# HSSearch Complete Deployment Script
+# This script deploys the application AND imports data
 # Usage: ./deploy.sh
 
 set -e  # Exit on any error
 
-echo "🚀 Starting HSSearch Deployment..."
-echo "=================================="
+echo "🚀 HSSearch Complete Deployment (App + Data)..."
+echo "=============================================="
+echo ""
+echo "📋 Available Deployment Options:"
+echo "  • ./deploy.sh      - Complete deployment (app + data import)"
+echo "  • ./deploy-app.sh  - Application only (no data import)"  
+echo "  • ./import-data.sh - Data import only"
+echo ""
+print_warning() { echo -e "\033[1;33m[WARNING]\033[0m $1"; }
+print_warning "This script will deploy everything including data import!"
+print_warning "Use ./deploy-app.sh if you only want to deploy the application."
+echo ""
+read -p "Continue with complete deployment? (y/N): " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Deployment cancelled. Use ./deploy-app.sh for app-only deployment."
+    exit 0
+fi
+echo """
 
 # Colors for output
 RED='\033[0;31m'
@@ -297,11 +315,19 @@ echo "  • Start with tunnel: ./start-cloudflare.sh"
 echo "  • Documentation: CLOUDFLARE_SETUP.md"
 
 echo ""
+print_success "Deployment Scripts:"
+echo "  • Complete deployment: ./deploy.sh (app + data)"
+echo "  • App only: ./deploy-app.sh"
+echo "  • Data operations: ./import-data.sh"
+echo "  • Check data status: ./import-data.sh --status"
+
+echo ""
 print_success "Useful Commands:"
 echo "  • View logs: docker compose logs -f"
 echo "  • Restart services: docker compose restart"
 echo "  • Stop services: docker compose down"
-echo "  • Update deployment: ./deploy.sh"
+echo "  • Update app: ./deploy-app.sh"
+echo "  • Reimport data: ./import-data.sh --force"
 
 echo ""
 print_status "Deployment completed at $(date)"
