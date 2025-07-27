@@ -12,6 +12,7 @@ data/*.pdf
 
 # Duplicate/temporary data files
 data/final-dataset-utf8.csv
+data/final-dataset-complete.csv
 
 # Cloudflare credentials (security)
 cloudflare/credentials/credentials.json
