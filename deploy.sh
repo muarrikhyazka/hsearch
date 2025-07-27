@@ -95,7 +95,7 @@ print_success "Directories created and configured"
 
 # Step 4: Check Required Files
 print_status "Checking required files..."
-required_files=("docker-compose.yml" "data/final-dataset.csv" "backend/app.py" "frontend/index.html")
+required_files=("docker-compose.yml" "data/final-dataset-complete.csv" "backend/app.py" "frontend/index.html")
 
 for file in "${required_files[@]}"; do
     if [ ! -f "$file" ]; then
@@ -187,13 +187,13 @@ print_status "This will replace any existing data with the latest dataset..."
 
 # Verify data file exists before import
 print_status "Verifying data file exists..."
-if [ ! -f "data/final-dataset.csv" ]; then
-    print_error "Data file not found: data/final-dataset.csv"
+if [ ! -f "data/final-dataset-complete.csv" ]; then
+    print_error "Data file not found: data/final-dataset-complete.csv"
     exit 1
 fi
 
 # Check data file size
-data_size=$(du -h data/final-dataset.csv | cut -f1)
+data_size=$(du -h data/final-dataset-complete.csv | cut -f1)
 print_status "Data file size: $data_size"
 
 # Wait a bit more for database to be fully ready
@@ -202,7 +202,7 @@ sleep 15
 
 # Check if backend container can access the data file
 print_status "Verifying data file access from container..."
-if ! docker compose exec -T backend ls -la /app/data/final-dataset.csv; then
+if ! docker compose exec -T backend ls -la /app/data/final-dataset-complete.csv; then
     print_error "Data file not accessible from backend container"
     print_status "Checking volume mounts..."
     docker compose exec -T backend ls -la /app/data/ || print_error "Data directory not mounted"

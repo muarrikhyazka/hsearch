@@ -28,9 +28,9 @@ fi
 print_status "Pulling latest changes..."
 git pull origin main
 
-print_status "Checking Indonesian dataset..."
-if [ ! -f "data/final-dataset-translated.csv" ]; then
-    print_error "Indonesian dataset not found"
+print_status "Checking complete Indonesian dataset..."
+if [ ! -f "data/final-dataset-complete.csv" ]; then
+    print_error "Complete Indonesian dataset not found"
     exit 1
 fi
 
@@ -66,12 +66,12 @@ print_status "Checking data files in container..."
 docker compose exec -T backend ls -la /app/data/
 
 print_status "Verifying CSV structure..."
-# Check if the translated CSV exists and show its header
-if docker compose exec -T backend test -f /app/data/final-dataset-translated.csv; then
-    print_status "Translated CSV header:"
-    docker compose exec -T backend head -1 /app/data/final-dataset-translated.csv
+# Check if the complete CSV exists and show its header
+if docker compose exec -T backend test -f /app/data/final-dataset-complete.csv; then
+    print_status "Complete CSV header:"
+    docker compose exec -T backend head -1 /app/data/final-dataset-complete.csv
 else
-    print_error "Translated CSV not found in container"
+    print_error "Complete CSV not found in container"
     exit 1
 fi
 

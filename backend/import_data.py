@@ -29,7 +29,7 @@ except ImportError:
 
 # Configuration
 DATABASE_URL = os.getenv('DATABASE_URL', "postgresql://hsearch_user:hsearch_secure_2024@localhost:5432/hsearch_db")
-DATA_FILE = "/app/data/final-dataset-translated.csv"
+DATA_FILE = "/app/data/final-dataset-complete.csv"
 
 # Initialize embedding model
 embedding_model = None
@@ -225,7 +225,7 @@ def validate_and_clean_data(row):
         return None, f"Data validation error: {str(e)}"
 
 def main():
-    logger.info("🚀 Starting HS Code data import...")
+    logger.info("🚀 Starting HS Code data import with complete Indonesian translations...")
     logger.info(f"📁 Source: {DATA_FILE}")
     
     # Test database connection first
