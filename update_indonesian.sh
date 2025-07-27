@@ -42,8 +42,22 @@ docker compose start backend
 print_status "Waiting for backend..."
 sleep 15
 
+print_status "Checking container file structure..."
+docker compose exec -T backend ls -la /app/
+
+# Find the correct path for import_data.py
+if docker compose exec -T backend test -f /app/import_data.py; then
+    IMPORT_PATH="/app/import_data.py"
+elif docker compose exec -T backend test -f /app/backend/import_data.py; then
+    IMPORT_PATH="/app/backend/import_data.py"
+else
+    print_error "import_data.py not found in container"
+    exit 1
+fi
+
+print_status "Found import script at: $IMPORT_PATH"
 print_status "Importing Indonesian translations..."
-if docker compose exec -T backend python /app/backend/import_data.py; then
+if docker compose exec -T backend python "$IMPORT_PATH"; then
     print_success "Import completed"
 else
     print_error "Import failed"
