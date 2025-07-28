@@ -67,7 +67,7 @@ docker rm hs_cloudflared 2>/dev/null || true
 # Get network name
 NETWORK_NAME=$(docker network ls --format "table {{.Name}}" | grep hsearch | head -1)
 if [ -z "$NETWORK_NAME" ]; then
-    NETWORK_NAME="hsearch_default"
+    NETWORK_NAME="hs_network"
     print_warning "Using default network name: $NETWORK_NAME"
 else
     print_status "Using network: $NETWORK_NAME"
