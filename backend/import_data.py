@@ -29,7 +29,7 @@ except ImportError:
 
 # Configuration
 DATABASE_URL = os.getenv('DATABASE_URL', "postgresql://hsearch_user:hsearch_secure_2024@localhost:5432/hsearch_db")
-DATA_FILE = "/app/data/final-dataset-standardized.csv"
+DATA_FILE = "/app/data/final-dataset-retranslated.csv"
 
 # Initialize embedding model
 embedding_model = None

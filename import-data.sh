@@ -142,19 +142,19 @@ get_data_status() {
 check_data_file() {
     print_status "Checking data file availability..."
     
-    if [ ! -f "data/final-dataset-standardized.csv" ]; then
-        print_error "Data file not found: data/final-dataset-standardized.csv"
+    if [ ! -f "data/final-dataset-retranslated.csv" ]; then
+        print_error "Data file not found: data/final-dataset-retranslated.csv"
         print_status "Available data files:"
         ls -la data/*.csv 2>/dev/null || echo "No CSV files found in data/ directory"
         exit 1
     fi
     
     # Check file size
-    data_size=$(du -h data/final-dataset-standardized.csv | cut -f1)
+    data_size=$(du -h data/final-dataset-retranslated.csv | cut -f1)
     print_success "Data file found: $data_size"
     
     # Check if backend container can access the file
-    if docker compose exec -T backend test -f /app/data/final-dataset-standardized.csv; then
+    if docker compose exec -T backend test -f /app/data/final-dataset-retranslated.csv; then
         print_success "Data file accessible from backend container"
     else
         print_error "Data file not accessible from backend container"
