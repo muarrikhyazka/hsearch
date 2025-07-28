@@ -39,9 +39,9 @@
         .search-input-wrapper { 
             display: flex; gap: 12px; align-items: flex-start; margin-bottom: 16px;
         }
-        .search-input-container { position: relative; flex: 1; }
+        .search-input-container { position: relative; flex: 1; display: flex; align-items: center; }
         .search-input {
-            width: 100%; padding: 16px 20px; font-size: 1rem; font-weight: 400;
+            width: 100%; padding: 16px 60px 16px 20px; font-size: 1rem; font-weight: 400;
             border: 2px solid #e2e8f0; border-radius: 12px;
             transition: all 0.2s ease; background: #fafafa;
         }
@@ -116,9 +116,11 @@
         
         .search-btn {
             background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none;
-            padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;
+            padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;
             font-size: 0.875rem; transition: all 0.2s ease;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); height: 40px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); height: 36px;
+            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+            z-index: 10;
         }
         .search-btn:hover { 
             transform: translateY(-1px); 
@@ -248,6 +250,7 @@
                 <div class="search-input-container">
                     <input type="text" class="search-input" id="searchInput" 
                            placeholder="Search HS codes with AI in Indonesian and English (e.g., computer, komputer, textile, tekstil, animals, hewan)">
+                    <button class="search-btn" onclick="performSearch()">Search</button>
                     <div class="suggestions" id="suggestions"></div>
                 </div>
             </div>
@@ -265,8 +268,6 @@
                             <option value="all">All Categories</option>
                         </select>
                     </div>
-                    
-                    <button class="search-btn" onclick="performSearch()">Search</button>
                 </div>
             </div>
         </div>
@@ -498,7 +499,7 @@
                 <div class="results-header">
                     <h3>Found ${data.results.length} results</h3>
                     <div style="font-size: 0.9rem; color: #666;">
-                        ${data.execution_time}s | ${data.search_type.replace('ai_powered', 'AI Powered')}
+                        ${data.execution_time}s | ${data.search_type.replace('ai_powered', 'AI Powered').replace('basic_search', 'Basic Search')}
                     </div>
                 </div>
             `;
