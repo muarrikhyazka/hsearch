@@ -44,6 +44,7 @@
             width: 100%; padding: 16px 60px 16px 20px; font-size: 1rem; font-weight: 400;
             border: 2px solid #e2e8f0; border-radius: 12px;
             transition: all 0.2s ease; background: #fafafa;
+            text-overflow: ellipsis; white-space: nowrap; overflow: hidden;
         }
         .search-input:focus { 
             border-color: #3b82f6; outline: none; background: white;
@@ -127,7 +128,7 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         
-        .ai-features { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+        .ai-features { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; justify-content: center; }
         .feature-badge {
             padding: 4px 8px; background: rgba(34, 197, 94, 0.1); color: #059669;
             border-radius: 8px; font-size: 0.75rem; font-weight: 500;
@@ -228,6 +229,16 @@
             .header h1 { font-size: 1.8rem; }
             .controls { flex-direction: column; align-items: stretch; }
             .ai-controls { justify-content: center; }
+            .search-bottom-row { flex-direction: column; gap: 16px; align-items: stretch; height: auto; }
+            .search-bottom-left { 
+                display: flex; gap: 12px; align-items: center; width: 100%;
+            }
+            .ai-toggle-container { 
+                flex: 1; min-width: 0; max-width: calc(50% - 6px);
+            }
+            .category-select { 
+                flex: 1; min-width: 0; max-width: calc(50% - 6px);
+            }
         }
     </style>
 </head>
