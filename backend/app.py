@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import logger_config  # Enable log monitoring
+
 import os
 import sys
 import time
